@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "release_id": "reviewed-semantic-meme-library-20260728",
+  "built_at": "2026-07-28T01:17:45.887228+08:00",
+  "review_status": "all_cards_human_reviewed",
+  "card_count": 27,
+  "route_count": 31,
+  "files": {
+    "library": {
+      "path": "library.json",
+      "sha256": "1d7dbba2939cdc4d71c3790689d76d6f4f41d73861490f33050600385df95303"
+    },
+    "vector_index": {
+      "path": "vector_index.json",
+      "sha256": "a4def0981b1ff4c61fb4e0e3f37ed011f87f2b96b4ae3fd9cba7d7daf68e3bc6"
+    },
+    "vectors": {
+      "path": "vectors.npy",
+      "sha256": "cf5c5c8d61de2099d1900f5220d46caae2bed889083b759c5ee5e540d5eca3a9"
+    }
+  }
+}

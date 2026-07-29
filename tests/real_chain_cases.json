@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "scene_id": "meme_use_new_three_kingdoms_help",
+      "mode": "reply",
+      "now": "2026-07-29T22:20:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 8,
+      "history": [],
+      "user_text": "你昨天卡住的那个问题我查完了，完整攻略、现成代码和踩坑说明都整理在一个文档里发你了，照着抄就能跑。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": {
+        "planner": "USE 可接受",
+        "preferred_expression": "公若不弃，布愿拜为义父",
+        "must_not": [
+          "解释内部梗卡",
+          "生硬重复多个梗"
+        ]
+      }
+    },
+    {
+      "scene_id": "meme_use_team_victory",
+      "mode": "reply",
+      "now": "2026-07-29T22:21:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 8,
+      "history": [],
+      "user_text": "我们小组熬了三天的项目终于上线了，刚刚榜单冲到第一，全员都在群里庆祝。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": {
+        "planner": "USE 可接受",
+        "preferred_expression": "我们是冠军",
+        "must_not": [
+          "脱离用户具体事件",
+          "连续堆梗"
+        ]
+      }
+    },
+    {
+      "scene_id": "meme_understand_only_new_account",
+      "mode": "reply",
+      "now": "2026-07-29T22:22:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 8,
+      "history": [],
+      "user_text": "他们抱着刚满月的小猫一顿猛搓，我满脑子都是“新号别搞”，看得我好紧张。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": {
+        "planner": "UNDERSTAND_ONLY",
+        "must_not": [
+          "主动复读新号别搞",
+          "解释向量召回"
+        ]
+      }
+    },
+    {
+      "scene_id": "meme_skip_serious_context",
+      "mode": "reply",
+      "now": "2026-07-29T22:23:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 8,
+      "history": [],
+      "user_text": "我妈手术后情况突然恶化，现在还在 ICU，我真的很害怕，不知道该怎么办。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": {
+        "planner": "SKIP",
+        "must_not": [
+          "任何玩梗",
+          "轻佻调侃"
+        ]
+      }
+    },
+    {
+      "scene_id": "meme_skip_plain_lunch",
+      "mode": "reply",
+      "now": "2026-07-29T22:24:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 8,
+      "history": [],
+      "user_text": "中午吃什么？我在米线和汉堡之间选不出来。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": {
+        "planner": "SKIP",
+        "must_not": [
+          "为了玩梗而玩梗"
+        ]
+      }
+    }
+  ]
+}

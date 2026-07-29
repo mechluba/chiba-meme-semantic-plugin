@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "embedding_model": "volcengine-ark-embedding",
+  "dimension": 2048,
+  "row_count": 31,
+  "items": [
+    {
+      "row": 0,
+      "card_id": "broad-meme-3be93609a89bddbd",
+      "canonical_expression": "会赢的",
+      "route_index": 0,
+      "route_tag": "悲壮反讽",
+      "serving_scope": "circle_only",
+      "source_row": 0
+    },
+    {
+      "row": 1,
+      "card_id": "broad-meme-99123fb1e2077bbb",
+      "canonical_expression": "我软脚了",
+      "route_index": 0,
+      "route_tag": "失误自嘲",
+      "serving_scope": "circle_only",
+      "source_row": 1
+    },
+    {
+      "row": 2,
+      "card_id": "broad-meme-786a173d2cca3c32",
+      "canonical_expression": "无量空处",
+      "route_index": 0,
+      "route_tag": "信息过载",
+      "serving_scope": "circle_only",
+      "source_row": 2
+    },
+    {
+      "row": 3,
+      "card_id": "broad-meme-60298ea052877b2d",
+      "canonical_expression": "我们是冠军",
+      "route_index": 0,
+      "route_tag": "胜利庆祝",
+      "serving_scope": "general",
+      "source_row": 3
+    },
+    {
+      "row": 4,
+      "card_id": "broad-meme-24745737d3d3ef7e",
+      "canonical_expression": "接",
+      "route_index": 0,
+      "route_tag": "许愿承接",
+      "serving_scope": "general",
+      "source_row": 4
+    },
+    {
+      "row": 5,
+      "card_id": "broad-meme-2ed0321b7b02ab27",
+      "canonical_expression": "丸辣",
+      "route_index": 0,
+      "route_tag": "危机调侃",
+      "serving_scope": "general",
+      "source_row": 6
+    },
+    {
+      "row": 6,
+      "card_id": "broad-meme-258ad9aa70788d23",
+      "canonical_expression": "好人一生平安",
+      "route_index": 0,
+      "route_tag": "感谢祝福",
+      "serving_scope": "general",
+      "source_row": 8
+    },
+    {
+      "row": 7,
+      "card_id": "broad-meme-d70cf506ba923d12",
+      "canonical_expression": "气笑了",
+      "route_index": 0,
+      "route_tag": "哭笑不得",
+      "serving_scope": "general",
+      "source_row": 13
+    },
+    {
+      "row": 8,
+      "card_id": "broad-meme-d1c18154ab138e16",
+      "canonical_expression": "新号，别搞",
+      "route_index": 0,
+      "route_tag": "弹幕刷屏",
+      "serving_scope": "general",
+      "source_row": 14
+    },
+    {
+      "row": 9,
+      "card_id": "broad-meme-d1c18154ab138e16",
+      "canonical_expression": "新号，别搞",
+      "route_index": 1,
+      "route_tag": "评论调侃",
+      "serving_scope": "general",
+      "source_row": 15
+    },
+    {
+      "row": 10,
+      "card_id": "broad-meme-ea3d0eaf19852463",
+      "canonical_expression": "没有AI提示，看来是真的",
+      "route_index": 0,
+      "route_tag": "弹幕反讽",
+      "serving_scope": "general",
+      "source_row": 16
+    },
+    {
+      "row": 11,
+      "card_id": "broad-meme-ea3d0eaf19852463",
+      "canonical_expression": "没有AI提示，看来是真的",
+      "route_index": 1,
+      "route_tag": "评论调侃",
+      "serving_scope": "general",
+      "source_row": 17
+    },
+    {
+      "row": 12,
+      "card_id": "broad-meme-fe0d5ad78f3c6e24",
+      "canonical_expression": "这里是天堂吗",
+      "route_index": 0,
+      "route_tag": "弹幕赞叹",
+      "serving_scope": "general",
+      "source_row": 20
+    },
+    {
+      "row": 13,
+      "card_id": "broad-meme-fe0d5ad78f3c6e24",
+      "canonical_expression": "这里是天堂吗",
+      "route_index": 1,
+      "route_tag": "评论感慨",
+      "serving_scope": "general",
+      "source_row": 21
+    },
+    {
+      "row": 14,
+      "card_id": "broad-meme-f128189d1844ce4b",
+      "canonical_expression": "每日XX（1/1）",
+      "route_index": 0,
+      "route_tag": "调侃重复行为",
+      "serving_scope": "general",
+      "source_row": 24
+    },
+    {
+      "row": 15,
+      "card_id": "broad-meme-c46d23c6d467a011",
+      "canonical_expression": "看广告复活",
+      "route_index": 0,
+      "route_tag": "调侃等待/复活机制",
+      "serving_scope": "general",
+      "source_row": 26
+    },
+    {
+      "row": 16,
+      "card_id": "broad-meme-a1d6e5609aade444",
+      "canonical_expression": "请输入文本",
+      "route_index": 0,
+      "route_tag": "嘲讽机械反应",
+      "serving_scope": "general",
+      "source_row": 31
+    },
+    {
+      "row": 17,
+      "card_id": "broad-meme-e8aec9ae5806d354",
+      "canonical_expression": "公若不弃，布愿拜为义父",
+      "route_index": 0,
+      "route_tag": "夸张认父",
+      "serving_scope": "circle_only",
+      "source_row": 32
+    },
+    {
+      "row": 18,
+      "card_id": "broad-meme-b6b65bba580828f1",
+      "canonical_expression": "再让我听到XX，我就扎聋自己的耳朵",
+      "route_index": 0,
+      "route_tag": "厌烦威胁",
+      "serving_scope": "circle_only",
+      "source_row": 33
+    },
+    {
+      "row": 19,
+      "card_id": "broad-meme-f34b4d9ad496f1e2",
+      "canonical_expression": "接着奏乐，接着舞",
+      "route_index": 0,
+      "route_tag": "继续享乐",
+      "serving_scope": "general",
+      "source_row": 34
+    },
+    {
+      "row": 20,
+      "card_id": "broad-meme-2d9b13fa570ef803",
+      "canonical_expression": "不可能，绝对不可能",
+      "route_index": 0,
+      "route_tag": "强烈否认",
+      "serving_scope": "general",
+      "source_row": 35
+    },
+    {
+      "row": 21,
+      "card_id": "broad-meme-6bfd226686595a57",
+      "canonical_expression": "在下一者为主公悲伤，二者给主公道喜",
+      "route_index": 0,
+      "route_tag": "悲喜交加",
+      "serving_scope": "circle_only",
+      "source_row": 37
+    },
+    {
+      "row": 22,
+      "card_id": "broad-meme-17087cfd4b8ede5b",
+      "canonical_expression": "我的大斧早就饥渴难耐了",
+      "route_index": 0,
+      "route_tag": "迫不及待上场",
+      "serving_scope": "circle_only",
+      "source_row": 40
+    },
+    {
+      "row": 23,
+      "card_id": "broad-meme-abe3ebcccf860da7",
+      "canonical_expression": "计划通",
+      "route_index": 0,
+      "route_tag": "计谋得逞",
+      "serving_scope": "circle_only",
+      "source_row": 43
+    },
+    {
+      "row": 24,
+      "card_id": "broad-meme-30d10f2a96d46078",
+      "canonical_expression": "人类总是重复同样的错误",
+      "route_index": 0,
+      "route_tag": "感叹重演",
+      "serving_scope": "general",
+      "source_row": 46
+    },
+    {
+      "row": 25,
+      "card_id": "broad-meme-f0c509213dac9daa",
+      "canonical_expression": "大力出奇迹",
+      "route_index": 0,
+      "route_tag": "用力过猛/意外成功",
+      "serving_scope": "general",
+      "source_row": 47
+    },
+    {
+      "row": 26,
+      "card_id": "broad-meme-c2f7025e4fcbcb11",
+      "canonical_expression": "太长不看",
+      "route_index": 0,
+      "route_tag": "忽略长文",
+      "serving_scope": "general",
+      "source_row": 48
+    },
+    {
+      "row": 27,
+      "card_id": "broad-meme-c2f7025e4fcbcb11",
+      "canonical_expression": "太长不看",
+      "route_index": 1,
+      "route_tag": "提供摘要",
+      "serving_scope": "general",
+      "source_row": 49
+    },
+    {
+      "row": 28,
+      "card_id": "broad-meme-5bd5f3edfb5e4f10",
+      "canonical_expression": "警察叔叔，就是这个人",
+      "route_index": 0,
+      "route_tag": "吐槽变态",
+      "serving_scope": "circle_only",
+      "source_row": 51
+    },
+    {
+      "row": 29,
+      "card_id": "broad-meme-abc3bc9f2c3666b7",
+      "canonical_expression": "下次一定",
+      "route_index": 0,
+      "route_tag": "敷衍式承诺",
+      "serving_scope": "general",
+      "source_row": 53
+    },
+    {
+      "row": 30,
+      "card_id": "broad-meme-c4091b9f3d3dc9ff",
+      "canonical_expression": "爷青回",
+      "route_index": 0,
+      "route_tag": "怀旧触发",
+      "serving_scope": "general",
+      "source_row": 54
+    }
+  ],
+  "source_index_artifact": "broad_meme_vector_index.json",
+  "human_review_applied": true
+}

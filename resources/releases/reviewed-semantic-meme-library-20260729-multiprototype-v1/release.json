@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "release_id": "reviewed-semantic-meme-library-20260729-multiprototype-v1",
+  "built_at": "2026-07-29T22:29:59.389051+08:00",
+  "derived_from_release_id": "reviewed-semantic-meme-library-20260728",
+  "review_status": "cards_human_reviewed_vectors_semantically_derived",
+  "index_strategy": "semantic_multi_prototype_v1",
+  "card_count": 27,
+  "route_count": 31,
+  "vector_count": 155,
+  "files": {
+    "library": {
+      "path": "library.json",
+      "sha256": "cf48389183f2d17a0d01efb93bbbd2bc99eeb2b6b0862e68a172830f4263d1f4"
+    },
+    "vector_index": {
+      "path": "vector_index.json",
+      "sha256": "e21fe8e4ad4db76b9512ddbd996db5065965482fd09e2b696a107b1ad7c36414"
+    },
+    "vectors": {
+      "path": "vectors.npy",
+      "sha256": "3b86f25f15e7ea3d456d9f5e48f6ad6b2625c8d40dc3e194dfdac0b46bbe8334"
+    }
+  }
+}

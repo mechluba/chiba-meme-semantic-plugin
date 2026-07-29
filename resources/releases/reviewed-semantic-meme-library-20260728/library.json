@@ -1,0 +1,2696 @@
+{
+  "schema_version": 2,
+  "library_id": "reviewed-semantic-meme-library-20260728",
+  "built_at": "2026-07-28T00:54:53.901624+08:00",
+  "design": {
+    "knowledge_inclusion_is_separate_from_serving": true,
+    "keyword_or_regex_meme_rules": false,
+    "retrieval_unit": "card_x_usage_route",
+    "minimum_requested_cards": 30,
+    "default_online_action": "SKIP"
+  },
+  "card_count": 27,
+  "cards": [
+    {
+      "card_id": "broad-meme-3be93609a89bddbd",
+      "canonical_expression": "会赢的",
+      "aliases": [
+        "会赢的！",
+        "会赢的……"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "在明知结局可能失败或已悲剧的情况下，仍表达对角色信念的认同、怀念或反讽，形成悲壮或幽默反差。",
+      "culture_scope": "咒术回战",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "悲壮反讽",
+          "when": "讨论或观看角色立下必胜Flag但最终失败的场景时，或现实中调侃明知会失败的事情。",
+          "communicative_intent": "表达对角色信念的复杂情感，或自嘲式地坚持。",
+          "allowed_realizations": [
+            "会赢的",
+            "会赢的！",
+            "会赢的……"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "咒术回战相关讨论",
+        "角色立Flag或悲剧结局场景"
+      ],
+      "hard_blocks": [
+        "严肃场合",
+        "对作品不熟悉的受众",
+        "可能被误解为盲目乐观的语境"
+      ],
+      "positive_contexts": [
+        {
+          "context": "在咒术回战粉丝群聊中讨论五条悟的战斗",
+          "expected_action": "USE"
+        },
+        {
+          "context": "用户提到明知会失败但仍想尝试的事情",
+          "expected_action": "UNDERSTAND_ONLY"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "正式的工作汇报或学术讨论",
+          "expected_action": "SKIP",
+          "reason": "过于随意且需要圈层知识"
+        },
+        {
+          "context": "对不熟悉咒术回战的人使用",
+          "expected_action": "SKIP",
+          "reason": "缺乏共同语境，易造成困惑"
+        }
+      ],
+      "retrieval_facets": [
+        "五条悟必胜台词",
+        "咒术回战悲壮梗",
+        "明知失败仍坚持"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "user_accepted_recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "在明知角色最终失败/悲剧结局的语境下，观众仍反复刷出角色生前的自信台词，表达对角色信念的认同、怀念或反讽，形成一种‘明知结局却仍愿相信’的悲壮或幽默反差。",
+          "usage_hypothesis": "任何作品中出现角色立下必胜Flag但最终失败的场景，观众可刷‘会赢的’来玩梗或表达复杂情感；也可用于现实中对明知会失败的事情的调侃。",
+          "source_bvids": [
+            "BV1F99MBoEvK"
+          ],
+          "source_circle_names": [
+            "咒术回战"
+          ],
+          "evidence_ids": [
+            "BV1F99MBoEvK:danmaku:2162085636163972864",
+            "BV1F99MBoEvK:danmaku:2164874073107931648",
+            "BV1F99MBoEvK:danmaku:2163080767042012672",
+            "BV1F99MBoEvK:danmaku:2162577800233289216",
+            "BV1F99MBoEvK:danmaku:2162577681559613184",
+            "BV1F99MBoEvK:danmaku:2156402497857056768",
+            "BV1F99MBoEvK:danmaku:2161246767663569664",
+            "BV1F99MBoEvK:danmaku:2152663262536980224",
+            "BV1F99MBoEvK:danmaku:2152551042146464256",
+            "BV1F99MBoEvK:danmaku:2152482526429255168",
+            "BV1F99MBoEvK:danmaku:2150303676114878720",
+            "BV1F99MBoEvK:danmaku:2148959198359485440",
+            "BV1F99MBoEvK:danmaku:2160952797754583552"
+          ],
+          "proposal_confidence": 0.85
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:42.581Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-99123fb1e2077bbb",
+      "canonical_expression": "我软脚了",
+      "aliases": [
+        "软脚了",
+        "软脚虾"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "在关键时刻发挥失常、掉链子，常用于电竞或压力场景的自嘲或调侃。",
+      "culture_scope": "CS2及电竞圈",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "失误自嘲",
+          "when": "自己或他人在重要时刻表现不佳、失误时。",
+          "communicative_intent": "以幽默方式承认失误，缓解尴尬或调侃他人。",
+          "allowed_realizations": [
+            "我软脚了",
+            "软脚了",
+            "软脚虾"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "电竞或竞技游戏讨论",
+        "关键时刻失误的场景"
+      ],
+      "hard_blocks": [
+        "非竞技语境下的身体不适描述",
+        "严肃的失败分析（如正式复盘）"
+      ],
+      "positive_contexts": [
+        {
+          "context": "在CS2游戏群聊中，队友关键局失误后自嘲",
+          "expected_action": "USE"
+        },
+        {
+          "context": "用户描述自己在重要面试中紧张失误",
+          "expected_action": "UNDERSTAND_ONLY"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "医疗健康咨询中描述腿部无力",
+          "expected_action": "SKIP",
+          "reason": "字面歧义，可能被误解为生理症状"
+        },
+        {
+          "context": "对非电竞爱好者使用",
+          "expected_action": "SKIP",
+          "reason": "缺乏圈层背景，难以理解"
+        }
+      ],
+      "retrieval_facets": [
+        "电竞失误梗",
+        "关键时刻掉链子",
+        "Niko软脚梗"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "user_accepted_recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "在CS等电竞语境中，用“软脚”戏谑选手在关键时刻发挥失常、表现疲软，常与选手Niko的梗关联，但可泛化到任何竞技或压力场景中表现不佳的情况。",
+          "usage_hypothesis": "当任何人在重要时刻失误、掉链子或表现低于预期时，观众或队友可用“软脚了”进行调侃或自嘲。",
+          "source_bvids": [
+            "BV1HM7F6UE5q",
+            "BV1Hkjy6gEcm",
+            "BV1MD7K65EDz"
+          ],
+          "source_circle_names": [
+            "CS2"
+          ],
+          "evidence_ids": [
+            "BV1HM7F6UE5q:danmaku:2152807339672368896",
+            "BV1HM7F6UE5q:danmaku:2148819314311548672",
+            "BV1HM7F6UE5q:danmaku:2147839039096091648",
+            "BV1HM7F6UE5q:danmaku:2146437358181349632",
+            "BV1Hkjy6gEcm:danmaku:2146792661825134080",
+            "BV1MD7K65EDz:danmaku:2163193581136046592",
+            "BV1MD7K65EDz:danmaku:2162758661246906624",
+            "BV1MD7K65EDz:danmaku:2158139359982550784",
+            "BV1MD7K65EDz:danmaku:2151751171789541376",
+            "BV1MD7K65EDz:danmaku:2150145024737108736",
+            "BV1MD7K65EDz:danmaku:2162613532784022784",
+            "BV1MD7K65EDz:danmaku:2146109604781395712",
+            "BV1MD7K65EDz:danmaku:2144389062667484416",
+            "BV1MD7K65EDz:danmaku:2155898760680082688",
+            "BV1MD7K65EDz:danmaku:2154503654185933056",
+            "BV1MD7K65EDz:danmaku:2153083610717466368",
+            "BV1MD7K65EDz:danmaku:2151525837982813952",
+            "BV1MD7K65EDz:danmaku:2150376882230335232",
+            "BV1MD7K65EDz:danmaku:2151547075824470784",
+            "BV1MD7K65EDz:danmaku:2146617963443900928",
+            "BV1MD7K65EDz:danmaku:2147904159918814976",
+            "BV1MD7K65EDz:danmaku:2159814669832305920",
+            "BV1MD7K65EDz:danmaku:2146663546275293952",
+            "BV1MD7K65EDz:danmaku:2143249106087890944"
+          ],
+          "proposal_confidence": 0.85
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:44.351Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-786a173d2cca3c32",
+      "canonical_expression": "无量空处",
+      "aliases": [
+        "中无量空处了",
+        "无量空处！"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "形容信息过载、大脑宕机、完全看懵的状态，源自五条悟的领域技能。",
+      "culture_scope": "咒术回战",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "信息过载",
+          "when": "面对令人困惑、信息量爆炸或荒诞的场景时。",
+          "communicative_intent": "表达自己看懵了、无法思考的状态。",
+          "allowed_realizations": [
+            "无量空处",
+            "中无量空处了",
+            "无量空处！"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "咒术回战相关讨论",
+        "信息过载或混乱的场景"
+      ],
+      "hard_blocks": [
+        "严肃的技术讨论",
+        "需要清晰思考的场合",
+        "对作品不熟悉的受众"
+      ],
+      "positive_contexts": [
+        {
+          "context": "在咒术回战粉丝群中讨论复杂剧情时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "用户表示被大量数据或信息搞晕",
+          "expected_action": "UNDERSTAND_ONLY"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "学术会议或正式报告",
+          "expected_action": "SKIP",
+          "reason": "过于随意且需要圈层知识"
+        },
+        {
+          "context": "对不熟悉咒术回战的人使用",
+          "expected_action": "SKIP",
+          "reason": "缺乏共同语境，易造成困惑"
+        }
+      ],
+      "retrieval_facets": [
+        "五条悟领域技能",
+        "大脑宕机梗",
+        "信息过载反应"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "user_accepted_recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "五条悟的领域技能，在弹幕中用于形容观众或角色陷入信息过载、混乱、无法思考的状态，类似‘大脑宕机’。",
+          "usage_hypothesis": "任何令人困惑、信息量爆炸或荒诞的场景，观众可刷‘无量空处’或‘中无量空处了’来表达自己看懵了。",
+          "source_bvids": [
+            "BV1F99MBoEvK",
+            "BV1PwoPBoEC8",
+            "BV1RP9aBEEDh"
+          ],
+          "source_circle_names": [
+            "咒术回战"
+          ],
+          "evidence_ids": [
+            "BV1F99MBoEvK:danmaku:2160882182527540224",
+            "BV1F99MBoEvK:danmaku:2146393904209989632",
+            "BV1PwoPBoEC8:danmaku:2160481735380091904",
+            "BV1PwoPBoEC8:danmaku:2161164600593496320",
+            "BV1PwoPBoEC8:danmaku:2159085320002936576",
+            "BV1RP9aBEEDh:danmaku:2153934171989926400"
+          ],
+          "proposal_confidence": 0.75
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:46.675Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-60298ea052877b2d",
+      "canonical_expression": "我们是冠军",
+      "aliases": [
+        "我们是冠军！",
+        "我们是冠军！！"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "团队竞技获胜时的集体庆祝与归属感表达，常用于刷屏。",
+      "culture_scope": "CS2及电竞圈",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "胜利庆祝",
+          "when": "团队赢得重要比赛、项目或达成里程碑时。",
+          "communicative_intent": "表达胜利喜悦和团队归属感。",
+          "allowed_realizations": [
+            "我们是冠军",
+            "我们是冠军！",
+            "我们是冠军！！"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "个人成就或非团队场景",
+        "严肃的失败场合"
+      ],
+      "positive_contexts": [
+        {
+          "context": "在电竞比赛夺冠后，粉丝群中庆祝",
+          "expected_action": "USE"
+        },
+        {
+          "context": "公司团队完成重大项目时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "个人获得奖项时",
+          "expected_action": "SKIP",
+          "reason": "强调团队，个人场景不适用"
+        },
+        {
+          "context": "比赛失利后",
+          "expected_action": "SKIP",
+          "reason": "与失败语境冲突"
+        }
+      ],
+      "retrieval_facets": [
+        "电竞夺冠庆祝",
+        "团队胜利刷屏",
+        "我们是冠军梗"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "user_accepted_recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "在电竞比赛（尤其是CS Major）夺冠时刻，观众集体刷屏表达胜利喜悦和归属感，是一种庆祝模板。",
+          "usage_hypothesis": "任何团队赢得重要比赛、项目或达成里程碑时，支持者可用此短语庆祝。",
+          "source_bvids": [
+            "BV1HM7F6UE5q"
+          ],
+          "source_circle_names": [
+            "CS2"
+          ],
+          "evidence_ids": [
+            "BV1HM7F6UE5q:danmaku:2159493400767256320",
+            "BV1HM7F6UE5q:danmaku:2156738819322582528",
+            "BV1HM7F6UE5q:danmaku:2150870145315984384",
+            "BV1HM7F6UE5q:danmaku:2148117763339047168",
+            "BV1HM7F6UE5q:danmaku:2158306518960428032",
+            "BV1HM7F6UE5q:danmaku:2147901117991239424",
+            "BV1HM7F6UE5q:danmaku:2157721128406522112",
+            "BV1HM7F6UE5q:danmaku:2148593747032982016",
+            "BV1HM7F6UE5q:danmaku:2158962029946514432",
+            "BV1HM7F6UE5q:danmaku:2157578400234283008"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:48.053Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-24745737d3d3ef7e",
+      "canonical_expression": "接",
+      "aliases": [
+        "接好运",
+        "接！"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "通过发送“接”字表达希望获得视频中展示的好运、高分或成就，是一种许愿行为。",
+      "culture_scope": "B站弹幕文化",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "许愿承接",
+          "when": "看到令人羡慕的成就、好运或抽卡出货等内容时。",
+          "communicative_intent": "表达希望自己也获得类似好运。",
+          "allowed_realizations": [
+            "接",
+            "接好运",
+            "接！"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "严肃的宗教或迷信讨论",
+        "负面事件（如接坏运气）"
+      ],
+      "positive_contexts": [
+        {
+          "context": "在B站看到别人抽卡出货的视频",
+          "expected_action": "USE"
+        },
+        {
+          "context": "朋友分享考试高分时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "讨论不幸事件时",
+          "expected_action": "SKIP",
+          "reason": "可能被误解为幸灾乐祸"
+        },
+        {
+          "context": "正式场合的祝福",
+          "expected_action": "SKIP",
+          "reason": "过于随意"
+        }
+      ],
+      "retrieval_facets": [
+        "B站接好运",
+        "许愿弹幕",
+        "沾喜气"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "用户通过发送'接'字表达希望获得视频中展示的好运、高分或成就，是一种许愿或沾喜气的行为。",
+          "usage_hypothesis": "当视频中出现令人羡慕的成就（如高分、好运、抽卡出货等）时，观众可发送'接'字表达希望自己也获得类似好运。",
+          "source_bvids": [
+            "BV1hU7Q6VEkK"
+          ],
+          "source_circle_names": [
+            "咒术回战"
+          ],
+          "evidence_ids": [
+            "BV1hU7Q6VEkK:danmaku:2164743864773149184",
+            "BV1hU7Q6VEkK:danmaku:2164701027675547904",
+            "BV1hU7Q6VEkK:danmaku:2164662201465144320",
+            "BV1hU7Q6VEkK:danmaku:2164537427295890688",
+            "BV1hU7Q6VEkK:danmaku:2164148567039222016",
+            "BV1hU7Q6VEkK:danmaku:2146822106040508928",
+            "BV1hU7Q6VEkK:danmaku:2143538584274109184",
+            "BV1hU7Q6VEkK:danmaku:2143538525436756224",
+            "BV1hU7Q6VEkK:danmaku:2160601649138841600",
+            "BV1hU7Q6VEkK:danmaku:2146821979792008704",
+            "BV1hU7Q6VEkK:danmaku:2149939059203298560",
+            "BV1hU7Q6VEkK:danmaku:2158003942473761280",
+            "BV1hU7Q6VEkK:danmaku:2156405821071363328",
+            "BV1hU7Q6VEkK:danmaku:2163148256253687808",
+            "BV1hU7Q6VEkK:danmaku:2145855359402210304",
+            "BV1hU7Q6VEkK:danmaku:2153583952530107648",
+            "BV1hU7Q6VEkK:danmaku:2147455361597476352",
+            "BV1hU7Q6VEkK:danmaku:2151823356516416256",
+            "BV1hU7Q6VEkK:danmaku:2148941898138589184",
+            "BV1hU7Q6VEkK:danmaku:2143770264264413184",
+            "BV1hU7Q6VEkK:danmaku:2146634952656033280",
+            "BV1hU7Q6VEkK:danmaku:2149367400473407232",
+            "BV1hU7Q6VEkK:danmaku:2162376512304288256",
+            "BV1hU7Q6VEkK:danmaku:2145708822902594560",
+            "BV1hU7Q6VEkK:danmaku:2145790144115413760",
+            "BV1hU7Q6VEkK:danmaku:2147221973368577792",
+            "BV1hU7Q6VEkK:danmaku:2151098774578578688",
+            "BV1hU7Q6VEkK:danmaku:2148065359663208448",
+            "BV1hU7Q6VEkK:danmaku:2155336365121399808",
+            "BV1hU7Q6VEkK:danmaku:2163964422740309504"
+          ],
+          "proposal_confidence": 0.9
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:49.603Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-2ed0321b7b02ab27",
+      "canonical_expression": "丸辣",
+      "aliases": [
+        "完了",
+        "完辣"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "谐音“完了”，表达事情糟糕、局势不妙，常用于剧情转折或角色遭遇危险时，带有调侃或夸张的意味。",
+      "culture_scope": "B站弹幕文化，泛二次元及中文互联网社区",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "危机调侃",
+          "when": "视频或对话中出现危机、失败、悲剧或反转情节，用户想以轻松幽默的方式表达“完了”时。",
+          "communicative_intent": "表达局势不妙或即将翻车，带有调侃或夸张的意味。",
+          "allowed_realizations": [
+            "丸辣",
+            "完辣",
+            "完了"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "出现危机、失败、悲剧或反转情节"
+      ],
+      "hard_blocks": [
+        "严肃灾难、真实伤亡事件等不宜调侃的语境"
+      ],
+      "positive_contexts": [
+        {
+          "context": "观看搞笑视频、游戏实况、动画剧情转折时，角色遭遇危险或失败",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "新闻报道真实灾难或悲剧事件",
+          "expected_action": "SKIP",
+          "reason": "避免对严肃事件轻浮调侃"
+        }
+      ],
+      "retrieval_facets": [
+        "谐音完了",
+        "局势不妙",
+        "翻车",
+        "危机调侃"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "谐音'完了'，表示事情糟糕、局势不妙，常用于剧情转折或角色遭遇危险时，带有调侃或夸张的意味。",
+          "usage_hypothesis": "任何视频中出现危机、失败、悲剧或反转情节时，观众刷屏表达'完了'的幽默说法。",
+          "source_bvids": [
+            "BV1nNqoY4EYg"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1nNqoY4EYg:danmaku:2164127369722784000",
+            "BV1nNqoY4EYg:danmaku:2164108923584538880",
+            "BV1nNqoY4EYg:danmaku:2164072227946407680",
+            "BV1nNqoY4EYg:danmaku:2164044088729507072",
+            "BV1nNqoY4EYg:danmaku:2163781761380339968",
+            "BV1nNqoY4EYg:danmaku:2147174949750636032",
+            "BV1nNqoY4EYg:danmaku:2143571868434076928",
+            "BV1nNqoY4EYg:danmaku:2162731127923195136",
+            "BV1nNqoY4EYg:danmaku:2154595269462428416",
+            "BV1nNqoY4EYg:danmaku:2144193487632199680",
+            "BV1nNqoY4EYg:danmaku:2145230202912642048",
+            "BV1nNqoY4EYg:danmaku:2147377551620996352",
+            "BV1nNqoY4EYg:danmaku:2146013700518509824",
+            "BV1nNqoY4EYg:danmaku:2144458237268101888",
+            "BV1nNqoY4EYg:danmaku:2160219137522732544",
+            "BV1nNqoY4EYg:danmaku:2148741811131976448",
+            "BV1nNqoY4EYg:danmaku:2143538978866603008",
+            "BV1nNqoY4EYg:danmaku:2159048679619948800",
+            "BV1nNqoY4EYg:danmaku:2157016683557735680"
+          ],
+          "proposal_confidence": 0.9
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:52.892Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-258ad9aa70788d23",
+      "canonical_expression": "好人一生平安",
+      "aliases": [
+        "好人平安",
+        "一生平安"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "对视频中做好事的人表达祝福和感谢，是正能量视频中的经典弹幕。",
+      "culture_scope": "中文互联网通用祝福语，B站弹幕文化",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "感谢祝福",
+          "when": "视频中出现助人、正能量、暖心行为，或分享资源、提供帮助时，用户想表达感谢和祝福。",
+          "communicative_intent": "表达对好人的敬意和祝福，感谢其善举或分享。",
+          "allowed_realizations": [
+            "好人一生平安",
+            "好人平安",
+            "一生平安"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "助人、正能量、暖心行为，或资源分享场景"
+      ],
+      "hard_blocks": [
+        "讽刺或反讽语境，避免曲解祝福本意"
+      ],
+      "positive_contexts": [
+        {
+          "context": "看到感人助人视频，或获得有用资源分享时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "用于讽刺或阴阳怪气时",
+          "expected_action": "SKIP",
+          "reason": "避免扭曲祝福原意，造成误解"
+        }
+      ],
+      "retrieval_facets": [
+        "感谢祝福",
+        "好人平安",
+        "正能量",
+        "资源分享"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "观众对视频中做好事的人表达祝福和感谢，是正能量视频中的经典弹幕。",
+          "usage_hypothesis": "适用于任何助人、正能量、暖心视频，观众用来表达对当事人的敬意。",
+          "source_bvids": [
+            "BV1rF336wEvu"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1rF336wEvu:danmaku:2163754933496091392",
+            "BV1rF336wEvu:danmaku:2164623636047816192",
+            "BV1rF336wEvu:danmaku:2164529888269285376",
+            "BV1rF336wEvu:danmaku:2164874615212859136",
+            "BV1rF336wEvu:danmaku:2164864887606817792",
+            "BV1rF336wEvu:danmaku:2164006354045157120",
+            "BV1rF336wEvu:danmaku:2164130837204631808",
+            "BV1rF336wEvu:danmaku:2164560700457396224",
+            "BV1rF336wEvu:danmaku:2164871337934794496"
+          ],
+          "proposal_confidence": 0.95
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:14:56.485Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-d70cf506ba923d12",
+      "canonical_expression": "气笑了",
+      "aliases": [
+        "又好气又好笑",
+        "气到笑"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "表达对视频内容又好气又好笑的心情，常用于UP主做出离谱或自相矛盾行为时。",
+      "culture_scope": "通用网络文化",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "哭笑不得",
+          "when": "当看到某人言行矛盾、自打脸或令人哭笑不得时，可用“气笑了”表达复杂情绪。",
+          "communicative_intent": "表达对离谱行为的无奈和好笑，带有调侃意味。",
+          "allowed_realizations": [
+            "气笑了",
+            "又好气又好笑",
+            "气到笑"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "出现矛盾、离谱或自打脸行为"
+      ],
+      "hard_blocks": [
+        "严肃愤怒场景",
+        "需要同情而非调侃的场合"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友讲述自己做的蠢事时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "他人遭遇不幸时",
+          "expected_action": "SKIP",
+          "reason": "可能显得缺乏同情心"
+        }
+      ],
+      "retrieval_facets": [
+        "又好气又好笑",
+        "离谱行为反应",
+        "哭笑不得的调侃"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "表达对视频内容又好气又好笑的心情，常用于UP主做出离谱或自相矛盾行为时。",
+          "usage_hypothesis": "当看到某人言行矛盾、自打脸或令人哭笑不得时，可用“气笑了”表达复杂情绪。",
+          "source_bvids": [
+            "BV1H2ZHBCEZQ",
+            "BV1apAEzcE1W"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1H2ZHBCEZQ:danmaku:2159193637929159168",
+            "BV1H2ZHBCEZQ:danmaku:2153213600771847936",
+            "BV1H2ZHBCEZQ:danmaku:2148639962198160384",
+            "BV1H2ZHBCEZQ:danmaku:2147349351629139456",
+            "BV1H2ZHBCEZQ:danmaku:2145343628242416640",
+            "BV1H2ZHBCEZQ:danmaku:2155335596766900480",
+            "BV1H2ZHBCEZQ:danmaku:2161118946634797824",
+            "BV1H2ZHBCEZQ:danmaku:2162936220454680832",
+            "BV1H2ZHBCEZQ:danmaku:2150291582694699264",
+            "BV1H2ZHBCEZQ:danmaku:2148717099491879680",
+            "BV1apAEzcE1W:danmaku:2163904202794313472",
+            "BV1apAEzcE1W:danmaku:2162673659876499456",
+            "BV1apAEzcE1W:danmaku:2160578855269006336",
+            "BV1apAEzcE1W:danmaku:2157326090568551168",
+            "BV1apAEzcE1W:danmaku:2153984597153963264"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:08.319Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-d1c18154ab138e16",
+      "canonical_expression": "新号，别搞",
+      "aliases": [
+        "新号别搞",
+        "新号，别乱搞",
+        "新号别乱搞"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "将新手、新设备、新宠物等比作刚注册的账号，提醒不要进行危险或不当操作，带有戏谑的保护意味。",
+      "culture_scope": "B站弹幕文化、游戏社区、社交平台语境",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "弹幕刷屏",
+          "when": "视频中出现新手、婴儿、新设备等被不当操作或面临风险时",
+          "communicative_intent": "以幽默方式提醒保护新手/新事物，表达“别折腾坏了”",
+          "allowed_realizations": [
+            "新号，别搞",
+            "新号别搞",
+            "新号，别乱搞"
+          ]
+        },
+        {
+          "route_tag": "评论调侃",
+          "when": "看到有人对不熟悉的事物进行可能造成损害的操作时",
+          "communicative_intent": "戏谑地劝阻，暗示对方缺乏经验",
+          "allowed_realizations": [
+            "新号，别搞",
+            "新号别搞"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "存在新手、新设备、新宠物等易损对象，且操作可能不当"
+      ],
+      "hard_blocks": [
+        "严肃的安全警告场景（如真实婴儿护理、专业设备操作）",
+        "对资深用户的正常操作误用"
+      ],
+      "positive_contexts": [
+        {
+          "context": "游戏直播中新手玩家尝试危险操作",
+          "expected_action": "USE"
+        },
+        {
+          "context": "视频中婴儿被轻轻摇晃或做搞笑动作",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "专业教学视频中演示正确操作",
+          "expected_action": "SKIP",
+          "reason": "无不当操作，不构成调侃基础"
+        },
+        {
+          "context": "真实事故或伤害事件",
+          "expected_action": "SKIP",
+          "reason": "严肃场合，不适合戏谑"
+        }
+      ],
+      "retrieval_facets": [
+        "新手保护",
+        "别折腾新号",
+        "新账号别乱搞",
+        "婴儿像新号"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "将婴儿类比为游戏/社交平台的新账号，提醒用户不要进行危险或不当操作，带有戏谑的保护意味。",
+          "usage_hypothesis": "当看到有人对新手、新设备、新宠物等不熟悉的事物进行可能造成损害的操作时，可以刷此弹幕。",
+          "source_bvids": [
+            "BV12y3K6oEYY"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV12y3K6oEYY:danmaku:2164484129679799808",
+            "BV12y3K6oEYY:danmaku:2164365432948868352",
+            "BV12y3K6oEYY:danmaku:2164520365052310528",
+            "BV12y3K6oEYY:danmaku:2164850752550778112",
+            "BV12y3K6oEYY:danmaku:2164583183117892608",
+            "BV12y3K6oEYY:danmaku:2164571902151451392",
+            "BV12y3K6oEYY:danmaku:2164866494721938688",
+            "BV12y3K6oEYY:danmaku:2164803048886091776",
+            "BV12y3K6oEYY:danmaku:2164765908625756416",
+            "BV12y3K6oEYY:danmaku:2164734408236535808",
+            "BV12y3K6oEYY:danmaku:2164018917662769408"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:09.260Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-ea3d0eaf19852463",
+      "canonical_expression": "没有AI提示，看来是真的",
+      "aliases": [
+        "没有AI提示，看来是真的",
+        "没AI提示，看来是真的",
+        "没有AI提示，看来是真实的"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "反讽视频内容过于离谱，以至于需要AI生成提示来标记为假，而缺少该提示反而被当作真实证据，形成幽默反差。",
+      "culture_scope": "B站弹幕文化、AI生成内容讨论圈",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "弹幕反讽",
+          "when": "视频中出现明显虚构、夸张或整活内容，且没有AI生成声明时",
+          "communicative_intent": "假装将离谱内容认定为真实，制造幽默反差",
+          "allowed_realizations": [
+            "没有AI提示，看来是真的",
+            "没AI提示，看来是真的"
+          ]
+        },
+        {
+          "route_tag": "评论调侃",
+          "when": "看到难以置信的言论或图片，且未标注AI生成时",
+          "communicative_intent": "讽刺内容虚假程度高，反话正说",
+          "allowed_realizations": [
+            "没有AI提示，看来是真的",
+            "没有AI提示，看来是真实的"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "内容明显夸张、虚构或难以置信",
+        "缺少AI生成标识或声明"
+      ],
+      "hard_blocks": [
+        "真实新闻或严肃纪实内容",
+        "已明确标注为AI生成的内容"
+      ],
+      "positive_contexts": [
+        {
+          "context": "鬼畜视频中荒诞情节",
+          "expected_action": "USE"
+        },
+        {
+          "context": "特效视频中明显不可能的场景",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "纪录片或新闻报道",
+          "expected_action": "SKIP",
+          "reason": "内容真实，反讽会误导"
+        },
+        {
+          "context": "已标注“由AI生成”的视频",
+          "expected_action": "SKIP",
+          "reason": "前提不成立，无反差效果"
+        }
+      ],
+      "retrieval_facets": [
+        "反讽AI提示",
+        "离谱内容当真",
+        "没有AI标识所以是真的"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "用反讽方式调侃视频内容过于离谱，以至于需要AI生成提示来标记为假，而缺少该提示反而被当作真实证据，形成幽默反差。",
+          "usage_hypothesis": "当看到任何过于夸张、难以置信的视频或言论时，可发此弹幕调侃其真实性，尤其适用于特效、整活、鬼畜等明显虚构内容。",
+          "source_bvids": [
+            "BV1iKgv6HEgJ"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1iKgv6HEgJ:danmaku:2164856982585549056",
+            "BV1iKgv6HEgJ:danmaku:2164775424369153792",
+            "BV1iKgv6HEgJ:danmaku:2164820255330301696",
+            "BV1iKgv6HEgJ:danmaku:2164821029682254336"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:12.086Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-fe0d5ad78f3c6e24",
+      "canonical_expression": "这里是天堂吗",
+      "aliases": [
+        "这里是天堂吗",
+        "这是天堂吗",
+        "天堂吧这是"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "表达因看到大量可爱、美好或正中喜好的内容而产生的极度愉悦和满足感，仿佛置身天堂。",
+      "culture_scope": "B站弹幕文化、萌宠/可爱内容圈、同人创作圈",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "弹幕赞叹",
+          "when": "视频中出现大量可爱角色、精美画面或令人心动的场景时",
+          "communicative_intent": "夸张地表达满足和愉悦，赞美内容",
+          "allowed_realizations": [
+            "这里是天堂吗",
+            "这是天堂吗"
+          ]
+        },
+        {
+          "route_tag": "评论感慨",
+          "when": "看到合集或盘点类视频中全是自己喜欢的内容时",
+          "communicative_intent": "表示极度享受，仿佛进入理想世界",
+          "allowed_realizations": [
+            "这里是天堂吗",
+            "天堂吧这是"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "内容密集呈现可爱、美好或符合特定喜好的元素"
+      ],
+      "hard_blocks": [
+        "悲伤、恐怖或负面内容",
+        "普通日常视频无特别亮点"
+      ],
+      "positive_contexts": [
+        {
+          "context": "猫咪合集视频",
+          "expected_action": "USE"
+        },
+        {
+          "context": "精美插画作品展示",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "灾难报道",
+          "expected_action": "SKIP",
+          "reason": "内容负面，与天堂意象冲突"
+        },
+        {
+          "context": "普通生活vlog",
+          "expected_action": "SKIP",
+          "reason": "缺乏密集的愉悦元素"
+        }
+      ],
+      "retrieval_facets": [
+        "可爱内容天堂",
+        "极度满足赞叹",
+        "美好事物合集"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "表达因看到大量可爱/美好内容而产生的极度愉悦和满足感，仿佛置身天堂。",
+          "usage_hypothesis": "当视频中出现大量可爱角色、精美画面或令人心动的场景时，观众可用此表达赞叹。",
+          "source_bvids": [
+            "BV1KPg16eEuP"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1KPg16eEuP:danmaku:2163970148695124480",
+            "BV1KPg16eEuP:danmaku:2164572981538579712",
+            "BV1KPg16eEuP:danmaku:2164858339602047232",
+            "BV1KPg16eEuP:danmaku:2164804633728609536",
+            "BV1KPg16eEuP:danmaku:2164750955462354944",
+            "BV1KPg16eEuP:danmaku:2163992179503588608",
+            "BV1KPg16eEuP:danmaku:2164606550886053888",
+            "BV1KPg16eEuP:danmaku:2164873202084581120",
+            "BV1KPg16eEuP:danmaku:2164732320815872768"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:17.199Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-f128189d1844ce4b",
+      "canonical_expression": "每日XX（1/1）",
+      "aliases": [
+        "每日卷着吃（1/1）",
+        "每日[行为]（1/1）"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "将重复出现的固定行为包装成游戏每日任务打卡，表达“又来了，日常操作”的调侃。",
+      "culture_scope": "游戏文化、B站UP主日常视频，熟悉每日任务打卡机制。",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "调侃重复行为",
+          "when": "当UP主或他人重复某种固定行为（如吃特定食物、喝饮料、做某个动作）时。",
+          "communicative_intent": "以打卡形式幽默地指出该行为的重复性，表达“日常任务完成”的调侃。",
+          "allowed_realizations": [
+            "每日XX（1/1）",
+            "每日[具体行为]（1/1）"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "出现明显的重复性行为",
+        "观众能识别该行为是UP主的习惯或梗"
+      ],
+      "hard_blocks": [
+        "严肃场合或非重复性行为",
+        "可能被误解为嘲讽对方单调的语境"
+      ],
+      "positive_contexts": [
+        {
+          "context": "美食UP主每期视频都吃卷饼时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "朋友每天发同样内容的动态",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "他人分享日常但并非刻意重复的行为",
+          "expected_action": "SKIP",
+          "reason": "可能显得冒犯，暗示对方生活单调"
+        }
+      ],
+      "retrieval_facets": [
+        "每日任务打卡",
+        "重复行为调侃",
+        "日常操作",
+        "又来了"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "模仿游戏或任务打卡的格式，将UP主每次吃卷饼/喝快乐水等行为戏称为每日任务，表达“又来了，日常操作”的调侃。",
+          "usage_hypothesis": "当UP主重复某种固定行为（如吃某种食物、喝饮料）时，观众可刷此弹幕将其打卡化。",
+          "source_bvids": [
+            "BV1FAKy6rEvv"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1FAKy6rEvv:danmaku:2159659151776301568",
+            "BV1FAKy6rEvv:danmaku:2160537702888933632",
+            "BV1FAKy6rEvv:danmaku:2163247906994540800",
+            "BV1FAKy6rEvv:danmaku:2162073231719797248",
+            "BV1FAKy6rEvv:danmaku:2162000207703882496",
+            "BV1FAKy6rEvv:danmaku:2162605162765278720",
+            "BV1FAKy6rEvv:danmaku:2164469305491066368",
+            "BV1FAKy6rEvv:danmaku:2164034802918135296",
+            "BV1FAKy6rEvv:danmaku:2162074899677142528",
+            "BV1FAKy6rEvv:danmaku:2161728654806778624",
+            "BV1FAKy6rEvv:danmaku:2159737964551993856",
+            "BV1FAKy6rEvv:danmaku:2160431182783857920",
+            "BV1FAKy6rEvv:danmaku:2159738809754501632"
+          ],
+          "proposal_confidence": 0.9
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:24.304Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-c46d23c6d467a011",
+      "canonical_expression": "看广告复活",
+      "aliases": [],
+      "language_market": "zh-CN",
+      "semantic_core": "将等待、观看内容或奇怪的复活机制调侃为手游中“看广告复活”的设计，表达对强制等待或低质量复活机制的戏谑。",
+      "culture_scope": "手游玩家、对“看广告复活”机制有认知的互联网用户。",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "调侃等待/复活机制",
+          "when": "当游戏、软件或现实中需要等待、观看内容才能继续，或者出现类似“复活”的机制时。",
+          "communicative_intent": "以手游广告复活的比喻来吐槽这种设计，表达幽默和无奈。",
+          "allowed_realizations": [
+            "看广告复活",
+            "这是看广告复活吗"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "出现等待、观看内容才能继续的机制",
+        "或奇怪的复活/重生情节"
+      ],
+      "hard_blocks": [
+        "实际广告场景",
+        "严肃讨论游戏设计时可能显得轻浮"
+      ],
+      "positive_contexts": [
+        {
+          "context": "游戏中死亡后需要观看视频才能复活",
+          "expected_action": "USE"
+        },
+        {
+          "context": "视频缓冲时调侃“看广告复活”",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "实际需要观看广告以获取奖励的正常游戏机制",
+          "expected_action": "SKIP",
+          "reason": "可能混淆为负面评价，引起误解"
+        }
+      ],
+      "retrieval_facets": [
+        "看广告复活",
+        "等待机制",
+        "手游广告",
+        "复活调侃"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "将CS2死后自动刷抖音类比为手机游戏中的'看广告复活'机制，调侃这种设计像手游一样需要看广告才能继续。",
+          "usage_hypothesis": "当游戏或软件中出现类似'等待/观看内容才能继续'的机制时，可以用'看广告复活'来调侃。",
+          "source_bvids": [
+            "BV18NTM64Eht"
+          ],
+          "source_circle_names": [
+            "CS2"
+          ],
+          "evidence_ids": [
+            "BV18NTM64Eht:danmaku:2163193805355321344",
+            "BV18NTM64Eht:danmaku:2158074530403574528",
+            "BV18NTM64Eht:danmaku:2155691499609235712"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:28.530Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-a1d6e5609aade444",
+      "canonical_expression": "请输入文本",
+      "aliases": [
+        "请输入文本"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "模仿AI或输入框提示，讽刺对方反应机械、无话可说或对话尴尬，如同等待输入的机器。",
+      "culture_scope": "中文互联网，尤其是熟悉AI或聊天机器人文化的群体",
+      "serving_scope": "general",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "嘲讽机械反应",
+          "when": "某人回复空洞、答非所问、长时间沉默，或对话陷入尴尬停顿时。",
+          "communicative_intent": "以AI提示音的方式讽刺对方反应迟钝或内容空洞，活跃气氛或施压。",
+          "allowed_realizations": [
+            "请输入文本"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "对话中出现明显停顿、无意义回复，或对方反应机械"
+      ],
+      "hard_blocks": [
+        "对方因技术原因无法回复，或对话本身为正式问答"
+      ],
+      "positive_contexts": [
+        {
+          "context": "群聊中某人只回复“嗯”“哦”等单字",
+          "expected_action": "USE"
+        },
+        {
+          "context": "朋友在需要回应时长时间沉默",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "对方正在认真思考或打字中",
+          "expected_action": "SKIP",
+          "reason": "可能打断正常交流，显得无礼"
+        },
+        {
+          "context": "客服或正式咨询场景",
+          "expected_action": "SKIP",
+          "reason": "讽刺语气不适用于服务场景"
+        }
+      ],
+      "retrieval_facets": [
+        "讽刺机械反应",
+        "无话可说",
+        "AI提示",
+        "请输入文本",
+        "对话尴尬"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili",
+        "source_material": {
+          "kind": "recent_bilibili_semantic_proposal",
+          "semantic_signature": "模仿AI语音/文字输入提示，讽刺对方无话可说、反应机械或对话尴尬",
+          "usage_hypothesis": "当某人回复空洞、答非所问或沉默时，弹幕刷此句嘲讽对方像AI一样需要提示",
+          "source_bvids": [
+            "BV1wagy6xEGm"
+          ],
+          "source_circle_names": [],
+          "evidence_ids": [
+            "BV1wagy6xEGm:danmaku:2161275066825437952",
+            "BV1wagy6xEGm:danmaku:2163471213492826112",
+            "BV1wagy6xEGm:danmaku:2162426682110738688",
+            "BV1wagy6xEGm:danmaku:2161934557988345600",
+            "BV1wagy6xEGm:danmaku:2164686157140200192",
+            "BV1wagy6xEGm:danmaku:2162384940523073536",
+            "BV1wagy6xEGm:danmaku:2163937218669333504",
+            "BV1wagy6xEGm:danmaku:2163167018852453632",
+            "BV1wagy6xEGm:danmaku:2163158776230730752",
+            "BV1wagy6xEGm:danmaku:2162314114658370560",
+            "BV1wagy6xEGm:danmaku:2164566795561319168",
+            "BV1wagy6xEGm:danmaku:2161666896658411008",
+            "BV1wagy6xEGm:danmaku:2161873004748635904",
+            "BV1wagy6xEGm:danmaku:2164818384788113664",
+            "BV1wagy6xEGm:danmaku:2164797911686006016"
+          ],
+          "proposal_confidence": 0.7
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:37.117Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-e8aec9ae5806d354",
+      "canonical_expression": "公若不弃，布愿拜为义父",
+      "aliases": [
+        "布愿拜为义父",
+        "公若不弃"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "因对方给予巨大好处或关键帮助，用夸张的认父仪式表达感激与迅速归附",
+      "culture_scope": "新三国鬼畜、B站二创、泛游戏/直播圈",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "夸张认父",
+          "when": "对方提供了资源、攻略、带飞、关键信息等巨大帮助，或给出难以拒绝的好处时",
+          "communicative_intent": "以戏剧化方式表达极度感激、崇拜或立即站队",
+          "allowed_realizations": [
+            "公若不弃，布愿拜为义父",
+            "布愿拜为义父",
+            "义父在上",
+            "直接叫义父"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "对方刚给出实质性好处或帮助",
+        "对话氛围轻松、允许玩梗"
+      ],
+      "hard_blocks": [
+        "正式场合",
+        "对长辈或上级",
+        "涉及真实利益交换",
+        "可能被误解为攀附或贬低对方"
+      ],
+      "positive_contexts": [
+        {
+          "context": "游戏队友带飞后",
+          "expected_action": "USE"
+        },
+        {
+          "context": "朋友分享稀缺资源时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "工作场合同事帮忙后",
+          "expected_action": "SKIP",
+          "reason": "过于夸张，可能显得不专业"
+        },
+        {
+          "context": "对方是严肃长辈",
+          "expected_action": "SKIP",
+          "reason": "可能冒犯"
+        }
+      ],
+      "retrieval_facets": [
+        "得到巨大好处后夸张认父",
+        "吕布认义父梗",
+        "新三国义父"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "recent_bilibili_new_three_kingdoms_evidence",
+          "source_bvids": [
+            "BV1RP9aBEEDh",
+            "BV1gjNV6qENc",
+            "BV1MJZ4BqESS"
+          ],
+          "source_titles": [
+            "《违 人 师 表》",
+            "新三国up锐评老三国07：公若不弃，布愿拜为义父！",
+            "《完善中》新三国梗台词合集"
+          ],
+          "evidence_ids": [
+            "BV1RP9aBEEDh:danmaku:2101000387074632704",
+            "BV1RP9aBEEDh:danmaku:2101047828905861376",
+            "BV1RP9aBEEDh:danmaku:2147899358010435072"
+          ],
+          "observed_usage": "近期跨圈改编视频里，“义父”被大量用于称呼提供巨大好处或关键帮助的人。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:39.008Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-b6b65bba580828f1",
+      "canonical_expression": "再让我听到XX，我就扎聋自己的耳朵",
+      "aliases": [
+        "再让我听到XX，我就扎聋耳朵",
+        "扎聋自己的耳朵"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "对重复出现的话题、说法或声音表达极度厌烦，用荒诞的自残威胁来夸张拒绝",
+      "culture_scope": "新三国鬼畜、B站弹幕、泛吐槽圈",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "厌烦威胁",
+          "when": "某个话题、梗或声音被反复提及，已经听烦了，想用夸张方式制止",
+          "communicative_intent": "表达对重复内容的厌烦，同时制造幽默效果",
+          "allowed_realizations": [
+            "再让我听到XX，我就扎聋自己的耳朵",
+            "再提XX我就扎聋耳朵",
+            "扎聋警告"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "对方或环境中重复出现某个内容",
+        "对话氛围轻松、非严肃"
+      ],
+      "hard_blocks": [
+        "涉及真实自残或暴力",
+        "严肃讨论",
+        "对方可能不理解玩笑"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友反复刷同一个梗时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "群聊里某人一直复读同一句话",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "对方在倾诉烦恼时",
+          "expected_action": "SKIP",
+          "reason": "显得冷漠，不尊重对方情绪"
+        },
+        {
+          "context": "正式会议或工作群",
+          "expected_action": "SKIP",
+          "reason": "不专业"
+        }
+      ],
+      "retrieval_facets": [
+        "听烦了用扎聋耳朵威胁",
+        "新三国扎聋耳朵",
+        "重复内容厌烦梗"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "recent_bilibili_new_three_kingdoms_evidence",
+          "source_bvids": [
+            "BV1RP9aBEEDh",
+            "BV1MJZ4BqESS",
+            "BV1di421v75y",
+            "BV1toMuzyEae"
+          ],
+          "source_titles": [
+            "《违 人 师 表》",
+            "我再听到你们议论孔明先生，我就扎聋我自己的耳朵",
+            "吐槽新三国31：我刘狈今天就要扎聋我自己的耳朵",
+            "新三国×mujica：扎聋我自己的耳朵"
+          ],
+          "evidence_ids": [
+            "BV1RP9aBEEDh:danmaku:2101029735643227136",
+            "BV1RP9aBEEDh:danmaku:2101708382192045568",
+            "BV1RP9aBEEDh:danmaku:2101032742773942784"
+          ],
+          "observed_usage": "原剧情句式已被替换话题槽位，用于表达对重复内容的戏剧化厌烦。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:40.415Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-f34b4d9ad496f1e2",
+      "canonical_expression": "接着奏乐，接着舞",
+      "aliases": [
+        "接着奏乐接着舞"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "短暂插曲或扫兴事件后，表示不受影响，继续原来的快乐活动",
+      "culture_scope": "新三国鬼畜、B站弹幕、泛娱乐场景",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "继续享乐",
+          "when": "被打断或发生小插曲后，想表示无所谓，继续开心",
+          "communicative_intent": "表达洒脱、不受影响，继续享受当下",
+          "allowed_realizations": [
+            "接着奏乐，接着舞",
+            "接着奏乐接着舞",
+            "奏乐，舞"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "真正悲伤或严肃的场合",
+        "涉及他人痛苦时"
+      ],
+      "positive_contexts": [
+        {
+          "context": "聚会中有人短暂离场又回来",
+          "expected_action": "USE"
+        },
+        {
+          "context": "游戏中被小挫折打断后继续",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "他人遭遇不幸时",
+          "expected_action": "SKIP",
+          "reason": "显得幸灾乐祸"
+        },
+        {
+          "context": "正式哀悼场合",
+          "expected_action": "SKIP",
+          "reason": "严重不合时宜"
+        }
+      ],
+      "retrieval_facets": [
+        "插曲后继续享乐",
+        "接着奏乐接着舞",
+        "新三国继续跳舞"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "bilibili_new_three_kingdoms_cross_period_evidence",
+          "source_bvids": [
+            "BV191DCBMEDi",
+            "BV1LsbhzBEgC",
+            "BV1Fy4y1v7fd"
+          ],
+          "source_titles": [
+            "新三国＆甄嬛传：接着奏乐接着舞",
+            "新三国吐槽第五十五集：接着奏乐 接着舞",
+            "鬼畜新三国：接着奏乐！接着舞！"
+          ],
+          "observed_usage": "从新三国名场面扩展为“插曲结束，继续享受”的通用反应模板。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:41.649Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-2d9b13fa570ef803",
+      "canonical_expression": "不可能，绝对不可能",
+      "aliases": [
+        "不可能绝对不可能"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "对离谱消息或难以接受的结果表示强烈否认，也可用于自嘲打脸前的嘴硬",
+      "culture_scope": "新三国鬼畜、B站弹幕、泛吐槽圈",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "强烈否认",
+          "when": "听到难以置信的消息、看到意外结果，或自己嘴硬不承认时",
+          "communicative_intent": "表达震惊、拒绝相信，或幽默地坚持己见",
+          "allowed_realizations": [
+            "不可能，绝对不可能",
+            "不可能绝对不可能",
+            "绝对不可能"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "需要客观判断的严肃讨论",
+        "可能伤害他人感情的否认"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友告知一个离谱的八卦",
+          "expected_action": "USE"
+        },
+        {
+          "context": "自己预测错误后嘴硬",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "他人陈述真实痛苦经历时",
+          "expected_action": "SKIP",
+          "reason": "显得不信任，缺乏同理心"
+        },
+        {
+          "context": "正式的事实核查场合",
+          "expected_action": "SKIP",
+          "reason": "不够严谨"
+        }
+      ],
+      "retrieval_facets": [
+        "强烈否认不可能",
+        "曹操不可能梗",
+        "打脸前嘴硬"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "recent_bilibili_new_three_kingdoms_collection",
+          "source_bvids": [
+            "BV1MJZ4BqESS"
+          ],
+          "source_titles": [
+            "《完善中》新三国梗台词合集"
+          ],
+          "observed_usage": "合集持续收录并单列该台词的二创切片。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:43.363Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-6bfd226686595a57",
+      "canonical_expression": "在下一者为主公悲伤，二者给主公道喜",
+      "aliases": [
+        "一者悲伤二者道喜",
+        "为主公悲伤，给主公道喜"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "面对表面坏事背后可能有好处的情况，先表示同情再戏剧化指出值得庆祝的一面",
+      "culture_scope": "新三国鬼畜、B站二创、泛吐槽圈",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "悲喜交加",
+          "when": "某件事看似糟糕，但可能带来意外好处，或想幽默地指出两面性时",
+          "communicative_intent": "用戏剧化的转折表达复杂感受，制造幽默效果",
+          "allowed_realizations": [
+            "在下一者为主公悲伤，二者给主公道喜",
+            "一者悲伤，二者道喜",
+            "为主公悲伤，给主公道喜"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "事件具有明显的两面性",
+        "对话氛围轻松、允许玩梗"
+      ],
+      "hard_blocks": [
+        "纯粹悲伤或严肃的场合",
+        "对方可能不理解这种转折"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友丢了工作但获得赔偿金",
+          "expected_action": "USE"
+        },
+        {
+          "context": "游戏输了但数据好看",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "他人遭遇重大不幸时",
+          "expected_action": "SKIP",
+          "reason": "显得轻浮，不尊重"
+        },
+        {
+          "context": "正式安慰场合",
+          "expected_action": "SKIP",
+          "reason": "不合时宜"
+        }
+      ],
+      "retrieval_facets": [
+        "坏事变好事戏剧化",
+        "一者悲伤二者道喜",
+        "新三国悲喜转折"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "recent_bilibili_new_three_kingdoms_collection",
+          "source_bvids": [
+            "BV1MJZ4BqESS"
+          ],
+          "source_titles": [
+            "《完善中》新三国梗台词合集"
+          ],
+          "observed_usage": "合集持续收录并单列该台词的二创切片。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:47.767Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-17087cfd4b8ede5b",
+      "canonical_expression": "我的大斧早就饥渴难耐了",
+      "aliases": [
+        "我的大斧早已饥渴难耐",
+        "大斧饥渴难耐"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "表达对即将到来的行动（吐槽、战斗、展示等）的强烈期待和兴奋，带有夸张的表演感。",
+      "culture_scope": "新三国二创圈、游戏/电竞圈、B站弹幕仪式",
+      "serving_scope": "circle_only",
+      "age_class": "current_observed",
+      "usage_routes": [
+        {
+          "route_tag": "迫不及待上场",
+          "when": "终于等到可以吐槽、开打、展示技能或处理某个目标时，用夸张台词表达兴奋。",
+          "communicative_intent": "渲染跃跃欲试的情绪，增加戏剧效果和幽默感。",
+          "allowed_realizations": [
+            "我的大斧早就饥渴难耐了",
+            "我的大斧已经饥渴难耐了",
+            "大斧饥渴难耐中"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "用户熟悉新三国或B站弹幕文化",
+        "存在一个等待处理或调侃的目标"
+      ],
+      "hard_blocks": [
+        "完全不了解该梗的对话对象",
+        "正式或严肃场合",
+        "可能被误解为暴力威胁的情境"
+      ],
+      "positive_contexts": [
+        {
+          "context": "游戏开黑或弹幕互动中，准备开团或吐槽时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "与不熟悉网络梗的长辈或同事交流",
+          "expected_action": "SKIP",
+          "reason": "可能造成困惑或误解"
+        },
+        {
+          "context": "涉及真实冲突或暴力话题",
+          "expected_action": "SKIP",
+          "reason": "可能被误解为宣扬暴力"
+        }
+      ],
+      "retrieval_facets": [
+        "迫不及待想行动",
+        "夸张表达兴奋",
+        "新三国潘凤梗"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "recent_bilibili_new_three_kingdoms",
+        "source_material": {
+          "kind": "recent_bilibili_new_three_kingdoms_collection",
+          "source_bvids": [
+            "BV1MJZ4BqESS"
+          ],
+          "source_titles": [
+            "《完善中》新三国梗台词合集"
+          ],
+          "observed_usage": "合集持续收录并单列该台词的二创切片。"
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:15:57.232Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-abe3ebcccf860da7",
+      "canonical_expression": "计划通",
+      "aliases": [
+        "計画通り",
+        "计划通り"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "表达事情如自己预谋般顺利发展，暗含计谋得逞的得意或阴险。",
+      "culture_scope": "中文ACG圈，源自日本动漫《死亡笔记》",
+      "serving_scope": "circle_only",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "计谋得逞",
+          "when": "自己或他人成功实施了一个计划、陷阱或恶作剧，且结果符合预期时。",
+          "communicative_intent": "炫耀计谋成功，或调侃对方中计，带有中二、反派式得意。",
+          "allowed_realizations": [
+            "计划通",
+            "計画通り",
+            "计划通り"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "对话涉及计划、计谋或恶作剧，且结果符合预期；最好在ACG爱好者圈内使用"
+      ],
+      "hard_blocks": [
+        "非ACG圈层的正式场合，或涉及严肃阴谋、伤害性行为"
+      ],
+      "positive_contexts": [
+        {
+          "context": "ACG群聊中，朋友成功整蛊了另一个人",
+          "expected_action": "USE"
+        },
+        {
+          "context": "自己设计的惊喜完美实现",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "非ACG爱好者之间的日常对话",
+          "expected_action": "SKIP",
+          "reason": "可能不理解梗的来源，造成困惑"
+        },
+        {
+          "context": "涉及真实伤害或违法行为的计划",
+          "expected_action": "SKIP",
+          "reason": "调侃可能淡化严重性"
+        }
+      ],
+      "retrieval_facets": [
+        "计划通",
+        "计谋得逞",
+        "死亡笔记",
+        "中二得意",
+        "計画通り"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_archive",
+        "source_material": {
+          "kind": "established_archive_card",
+          "semantic_core": "表达事情如自己预谋般顺利发展，暗含计谋得逞的得意或阴险。",
+          "culture_scope": "中文ACG圈",
+          "usage_routes": [
+            {
+              "route_tag": "计谋得逞",
+              "when": "当自己或他人成功实施了一个计划、陷阱或恶作剧，且结果符合预期时。",
+              "communicative_intent": "炫耀自己的计谋成功，或调侃对方中计。",
+              "allowed_forms": [
+                "计划通",
+                "計画通り",
+                "计划通り"
+              ]
+            }
+          ]
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:03.620Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-30d10f2a96d46078",
+      "canonical_expression": "人类总是重复同样的错误",
+      "aliases": [
+        "人类总要重复同样的错误"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "感叹历史或错误不断重演，表达无奈或讽刺明知故犯。",
+      "culture_scope": "中文ACG圈",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "感叹重演",
+          "when": "看到类似错误再次发生、自嘲明知故犯时，表达对历史重演或人类不长记性的无奈或讽刺。",
+          "communicative_intent": "表达对历史重演或人类不长记性的无奈或讽刺",
+          "allowed_realizations": [
+            "人类总是重复同样的错误",
+            "人类总要重复同样的错误"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "出现重复错误、历史重演、明知故犯等情境"
+      ],
+      "hard_blocks": [
+        "严肃的历史学术讨论中不宜直接引用，可能显得轻浮"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友又犯了同样的错误，自嘲时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "看到新闻中类似悲剧再次发生",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "正式的历史分析或学术写作",
+          "expected_action": "SKIP",
+          "reason": "表达过于感性，缺乏学术严谨性"
+        }
+      ],
+      "retrieval_facets": [
+        "错误重演",
+        "历史循环",
+        "不长记性",
+        "明知故犯"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_archive",
+        "source_material": {
+          "kind": "established_archive_card",
+          "semantic_core": "感叹历史或错误不断重演，表达无奈或讽刺明知故犯",
+          "culture_scope": "中文ACG圈",
+          "usage_routes": [
+            {
+              "route_tag": "感叹重演",
+              "when": "看到类似错误再次发生、自嘲明知故犯时",
+              "communicative_intent": "表达对历史重演或人类不长记性的无奈或讽刺",
+              "allowed_forms": [
+                "人类总是重复同样的错误",
+                "人类总要重复同样的错误"
+              ]
+            }
+          ]
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:07.116Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-f0c509213dac9daa",
+      "canonical_expression": "大力出奇迹",
+      "aliases": [],
+      "language_market": "zh-CN",
+      "semantic_core": "调侃用力过猛或意外成功，源自抢劫犯赵金龙的采访语录。",
+      "culture_scope": "中文互联网",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "用力过猛/意外成功",
+          "when": "游戏抽卡、尝试困难任务、搞笑失败时，调侃蛮力或运气。",
+          "communicative_intent": "调侃蛮力或运气",
+          "allowed_realizations": [
+            "大力出奇迹"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "涉及用力过猛、意外成功、运气成分等情境"
+      ],
+      "hard_blocks": [
+        "需要精确操作或专业指导的场合不宜使用，可能误导"
+      ],
+      "positive_contexts": [
+        {
+          "context": "游戏抽卡时随便一抽出了稀有角色",
+          "expected_action": "USE"
+        },
+        {
+          "context": "修理东西时用蛮力居然修好了",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "精密仪器维修指导",
+          "expected_action": "SKIP",
+          "reason": "可能鼓励暴力操作，造成损坏"
+        }
+      ],
+      "retrieval_facets": [
+        "蛮力成功",
+        "意外好运",
+        "用力过猛",
+        "调侃运气"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_archive",
+        "source_material": {
+          "kind": "established_archive_card",
+          "semantic_core": "调侃用力过猛或意外成功，源自抢劫犯赵金龙的采访语录。",
+          "culture_scope": "中文互联网",
+          "usage_routes": [
+            {
+              "route_tag": "用力过猛/意外成功",
+              "when": "游戏抽卡、尝试困难任务、搞笑失败时",
+              "communicative_intent": "调侃蛮力或运气",
+              "allowed_forms": [
+                "大力出奇迹"
+              ]
+            }
+          ]
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:10.375Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-c2f7025e4fcbcb11",
+      "canonical_expression": "太长不看",
+      "aliases": [
+        "TL;DR",
+        "省流",
+        "太长不看版：",
+        "TL;DR："
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "表示因文本过长而忽略阅读，或用于提供摘要。",
+      "culture_scope": "中文互联网",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "忽略长文",
+          "when": "在回复长帖或文章时，表示自己没读或不想读，表达不耐烦或调侃。",
+          "communicative_intent": "表达不耐烦或调侃",
+          "allowed_realizations": [
+            "太长不看",
+            "TL;DR",
+            "省流"
+          ]
+        },
+        {
+          "route_tag": "提供摘要",
+          "when": "在长文开头或结尾，用此短语引出摘要，提供简洁总结。",
+          "communicative_intent": "提供简洁总结",
+          "allowed_realizations": [
+            "太长不看版：",
+            "TL;DR："
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "面对长文本、需要总结或表达不想阅读"
+      ],
+      "hard_blocks": [
+        "正式报告、学术论文等需要完整阅读的场合不宜使用"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友发来一篇超长文章，不想读时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "在长文开头提供摘要",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "法律文件或合同解读",
+          "expected_action": "SKIP",
+          "reason": "必须完整阅读，不能跳过"
+        }
+      ],
+      "retrieval_facets": [
+        "跳过阅读",
+        "文本太长",
+        "提供摘要",
+        "不耐烦"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_archive",
+        "source_material": {
+          "kind": "established_archive_card",
+          "semantic_core": "表示因文本过长而忽略阅读，或用于提供摘要",
+          "culture_scope": "中文互联网",
+          "usage_routes": [
+            {
+              "route_tag": "忽略长文",
+              "when": "在回复长帖或文章时，表示自己没读或不想读",
+              "communicative_intent": "表达不耐烦或调侃",
+              "allowed_forms": [
+                "太长不看",
+                "TL;DR",
+                "省流"
+              ]
+            },
+            {
+              "route_tag": "提供摘要",
+              "when": "在长文开头或结尾，用此短语引出摘要",
+              "communicative_intent": "提供简洁总结",
+              "allowed_forms": [
+                "太长不看版：",
+                "TL;DR："
+              ]
+            }
+          ]
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:12.720Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-5bd5f3edfb5e4f10",
+      "canonical_expression": "警察叔叔，就是这个人",
+      "aliases": [
+        "就是这个人"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "用“警察叔叔，就是这个人”来吐槽或举报变态、萝莉控等行为。",
+      "culture_scope": "中文ACG圈",
+      "serving_scope": "circle_only",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "吐槽变态",
+          "when": "看到或讨论萝莉控、绅士等变态行为时，表达调侃、举报或幽默的指责。",
+          "communicative_intent": "表达调侃、举报或幽默的指责",
+          "allowed_realizations": [
+            "警察叔叔，就是这个人",
+            "就是这个人"
+          ]
+        }
+      ],
+      "required_context_signals": [
+        "ACG圈讨论，涉及萝莉控、绅士等被认为变态的行为"
+      ],
+      "hard_blocks": [
+        "真实犯罪举报或严肃场合禁用，避免误解为真正报警"
+      ],
+      "positive_contexts": [
+        {
+          "context": "群里有人发了张萝莉图，大家调侃时",
+          "expected_action": "USE"
+        },
+        {
+          "context": "看到某个角色做出绅士行为，吐槽时",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "真实的违法犯罪举报",
+          "expected_action": "SKIP",
+          "reason": "可能干扰真正的执法程序，造成误解"
+        }
+      ],
+      "retrieval_facets": [
+        "吐槽变态",
+        "萝莉控举报",
+        "绅士行为",
+        "幽默指责"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_archive",
+        "source_material": {
+          "kind": "established_archive_card",
+          "semantic_core": "用“警察叔叔，就是这个人”来吐槽或举报变态、萝莉控等行为。",
+          "culture_scope": "中文ACG圈",
+          "usage_routes": [
+            {
+              "route_tag": "吐槽变态",
+              "when": "看到或讨论萝莉控、绅士等变态行为时。",
+              "communicative_intent": "表达调侃、举报或幽默的指责。",
+              "allowed_forms": [
+                "直接说“警察叔叔，就是这个人”",
+                "使用变体如“就是这个人”"
+              ]
+            }
+          ]
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": true,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:16.958Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-abc3bc9f2c3666b7",
+      "canonical_expression": "下次一定",
+      "aliases": [
+        "下次一定",
+        "下次吧",
+        "下次再说"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "口头承诺下次会做，实际常带拖延、鸽掉或敷衍意味，表达一种非正式、半开玩笑的推脱。",
+      "culture_scope": "中文互联网社区（B站、直播、社交平台）",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "敷衍式承诺",
+          "when": "被催促做某事、被要求承诺时，用轻松语气推脱",
+          "communicative_intent": "委婉拒绝或拖延，同时保持友好氛围",
+          "allowed_realizations": [
+            "下次一定",
+            "下次吧",
+            "下次再说",
+            "下次一定（狗头）"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "正式承诺、合同、严肃请求",
+        "需要明确答复的场合"
+      ],
+      "positive_contexts": [
+        {
+          "context": "朋友间闲聊，被问何时更新视频/玩游戏",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "工作场合被要求交付任务",
+          "expected_action": "SKIP",
+          "reason": "显得不专业、不负责"
+        }
+      ],
+      "retrieval_facets": [
+        "下次一定梗",
+        "敷衍拖延",
+        "B站弹幕常用语",
+        "鸽了"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_bilibili",
+        "source_material": {
+          "kind": "curated_semantic_seed",
+          "note": "Included as recognizable knowledge; serving still requires semantic context gating."
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:19.934Z"
+      }
+    },
+    {
+      "card_id": "broad-meme-c4091b9f3d3dc9ff",
+      "canonical_expression": "爷青回",
+      "aliases": [
+        "爷青回",
+        "爷的青春回来了",
+        "青春回来了"
+      ],
+      "language_market": "zh-CN",
+      "semantic_core": "看到童年、旧作品或经典内容回归时表达青春记忆被唤醒，带有怀旧和激动情绪。",
+      "culture_scope": "中文互联网社区（B站、怀旧话题）",
+      "serving_scope": "general",
+      "age_class": "established",
+      "usage_routes": [
+        {
+          "route_tag": "怀旧触发",
+          "when": "遇到童年动画、老游戏、经典歌曲或旧事物重现时",
+          "communicative_intent": "表达怀旧感动，唤起共鸣",
+          "allowed_realizations": [
+            "爷青回",
+            "爷的青春回来了",
+            "青春回来了",
+            "我的童年回来了"
+          ]
+        }
+      ],
+      "required_context_signals": [],
+      "hard_blocks": [
+        "严肃历史讨论",
+        "与个人青春无关的新事物"
+      ],
+      "positive_contexts": [
+        {
+          "context": "看到老动画重制或经典游戏续作消息",
+          "expected_action": "USE"
+        }
+      ],
+      "negative_contexts": [
+        {
+          "context": "讨论当代流行文化或全新作品",
+          "expected_action": "SKIP",
+          "reason": "缺乏怀旧基础，显得突兀"
+        }
+      ],
+      "retrieval_facets": [
+        "爷青回梗",
+        "怀旧弹幕",
+        "青春记忆",
+        "B站经典梗"
+      ],
+      "knowledge": {
+        "eligible": true,
+        "source_class": "established_bilibili",
+        "source_material": {
+          "kind": "curated_semantic_seed",
+          "note": "Included as recognizable knowledge; serving still requires semantic context gating."
+        }
+      },
+      "serving": {
+        "candidate": true,
+        "default_action": "SKIP",
+        "allowed_planner_actions": [
+          "USE",
+          "UNDERSTAND_ONLY",
+          "SKIP"
+        ],
+        "requires_semantic_gate": true,
+        "requires_circle_anchor": false,
+        "canonical_expression_is_not_instruction": true
+      },
+      "human_review": {
+        "status": "approved",
+        "note": "",
+        "updated_at": "2026-07-27T17:16:25.330Z"
+      }
+    }
+  ],
+  "vector_index": {
+    "path": "vector_index.json",
+    "vectors_path": "vectors.npy",
+    "embedding_model": "volcengine-ark-embedding",
+    "dimension": 2048,
+    "row_count": 31
+  },
+  "source_library_id": "broad-semantic-meme-library-20260728",
+  "reviewed_at": "2026-07-28T01:17:45.887228+08:00",
+  "human_review": {
+    "audit_artifact": "meme_review_applied.json",
+    "source_exported_at": "2026-07-27T17:16:40.456Z",
+    "approved_count": 27,
+    "rejected_count": 21,
+    "all_cards_reviewed": true
+  }
+}

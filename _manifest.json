@@ -1,0 +1,45 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "name": "Chiba 语义梗库",
+  "description": "使用向量召回和 Planner 语义决策，把审核后梗卡作为 Replyer 的一次性可选表达资源。",
+  "author": {
+    "name": "Chiba Team",
+    "url": "https://github.com/mechluba"
+  },
+  "license": "MIT",
+  "urls": {
+    "repository": "https://github.com/mechluba/chiba-meme-semantic-plugin",
+    "homepage": "https://github.com/mechluba/chiba-meme-semantic-plugin",
+    "documentation": "https://github.com/mechluba/chiba-meme-semantic-plugin#readme",
+    "issues": "https://github.com/mechluba/chiba-meme-semantic-plugin/issues"
+  },
+  "host_application": {
+    "min_version": "1.0.0",
+    "max_version": "1.99.99"
+  },
+  "sdk": {
+    "min_version": "2.5.4",
+    "max_version": "2.99.99"
+  },
+  "dependencies": [
+    {
+      "type": "python_package",
+      "name": "numpy",
+      "version_spec": ">=2.2.6"
+    }
+  ],
+  "capabilities": [
+    "chat.get_all_streams",
+    "message.get_recent",
+    "llm.embed",
+    "llm.generate"
+  ],
+  "i18n": {
+    "default_locale": "zh-CN",
+    "supported_locales": [
+      "zh-CN"
+    ]
+  },
+  "id": "chiba.meme-semantic-plugin"
+}
