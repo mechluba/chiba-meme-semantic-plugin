@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import json
+import shutil
 import subprocess
 import sys
 
@@ -96,6 +97,45 @@ def test_invalid_explicit_revision_is_rejected(tmp_path: Path) -> None:
         assert "完整 Git commit" in str(exc)
     else:
         raise AssertionError("无效 revision 应被拒绝")
+
+
+def test_fingerprint_runs_from_installer_style_directory(
+    tmp_path: Path,
+) -> None:
+    installed_root = tmp_path / "chiba_meme-semantic-plugin"
+    shutil.copytree(
+        PLUGIN_ROOT,
+        installed_root,
+        ignore=shutil.ignore_patterns(
+            ".git",
+            ".venv",
+            ".pytest_cache",
+            ".ruff_cache",
+            "__pycache__",
+        ),
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(installed_root / "scripts" / "runtime_fingerprint.py"),
+            "--chiba-root",
+            str(CHIBA_ROOT),
+            "--plugin-root",
+            str(installed_root),
+            "--environment",
+            "installer-path-test",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["environment"] == "installer-path-test"
+    assert payload["compatibility"]["plugin"]["id"] == (
+        "chiba.meme-semantic-plugin"
+    )
 
 
 def test_identical_compatibility_matches_across_environment_labels(

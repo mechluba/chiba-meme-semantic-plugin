@@ -30,7 +30,7 @@ from .meme_runtime import (
 )
 
 
-PLUGIN_VERSION = "1.0.1"
+PLUGIN_VERSION = "1.0.2"
 DEFAULT_RELEASE_ID = (
     "reviewed-semantic-meme-library-20260729-multiprototype-v1"
 )

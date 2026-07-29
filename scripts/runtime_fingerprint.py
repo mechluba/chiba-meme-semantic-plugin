@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from hashlib import sha256
 from importlib.metadata import PackageNotFoundError, version
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -18,15 +19,28 @@ import tomllib
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
-PLUGIN_PARENT = PLUGIN_ROOT.parent
-if str(PLUGIN_PARENT) not in sys.path:
-    sys.path.insert(0, str(PLUGIN_PARENT))
 
-from chiba_meme_semantic_plugin.meme_runtime import MemeRelease  # noqa: E402
-from chiba_meme_semantic_plugin.plugin import (  # noqa: E402
-    DEFAULT_RELEASE_ID,
-    MemeSemanticPlugin,
-)
+
+def _load_plugin_module(plugin_root: Path) -> Any:
+    """按运行时相同方式加载插件，不依赖安装目录能否作为包名导入。"""
+    module_name = "_chiba_meme_semantic_fingerprint_runtime"
+    spec = spec_from_file_location(
+        module_name,
+        plugin_root / "plugin.py",
+        submodule_search_locations=[str(plugin_root)],
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法加载插件入口: {plugin_root / 'plugin.py'}")
+    module = module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_PLUGIN_MODULE = _load_plugin_module(PLUGIN_ROOT)
+MemeRelease = _PLUGIN_MODULE.MemeRelease
+DEFAULT_RELEASE_ID = _PLUGIN_MODULE.DEFAULT_RELEASE_ID
+MemeSemanticPlugin = _PLUGIN_MODULE.MemeSemanticPlugin
 
 
 RUNTIME_EXCLUDED_PARTS = frozenset(
