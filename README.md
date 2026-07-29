@@ -83,4 +83,6 @@ resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1/
 
 两边必须使用相同的 Chiba commit、插件 commit/runtime tree、插件配置、梗包哈希、模型任务配置和行为关键配置。
 
+服务器的 `/opt/.../current` 不是 Git checkout；指纹工具会自动读取同级 `shared/deployed-revision`。也可以用 `--chiba-revision <完整 commit>` 显式指定，但不能省略 revision。
+
 长期找新梗、更新梗和让老梗退环境的流程见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。

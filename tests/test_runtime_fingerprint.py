@@ -62,6 +62,42 @@ def test_runtime_fingerprint_contains_behavior_critical_inputs() -> None:
     assert "password" not in keys
 
 
+def test_deployed_revision_marker_is_used_without_git(tmp_path: Path) -> None:
+    module = _load_fingerprint_module()
+    current = tmp_path / "current"
+    current.mkdir()
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    revision = "a" * 40
+    (shared / "deployed-revision").write_text(
+        revision + "\n",
+        encoding="utf-8",
+    )
+
+    resolved, source = module._resolve_chiba_revision(
+        current,
+        {"commit": ""},
+    )
+
+    assert resolved == revision
+    assert source == str(shared / "deployed-revision")
+
+
+def test_invalid_explicit_revision_is_rejected(tmp_path: Path) -> None:
+    module = _load_fingerprint_module()
+
+    try:
+        module._resolve_chiba_revision(
+            tmp_path,
+            {"commit": ""},
+            "not-a-commit",
+        )
+    except ValueError as exc:
+        assert "完整 Git commit" in str(exc)
+    else:
+        raise AssertionError("无效 revision 应被拒绝")
+
+
 def test_identical_compatibility_matches_across_environment_labels(
     tmp_path: Path,
 ) -> None:

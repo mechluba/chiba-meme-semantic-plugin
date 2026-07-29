@@ -117,6 +117,42 @@ def _git_state(root: Path) -> dict[str, Any]:
     }
 
 
+def _is_commit_hash(value: str) -> bool:
+    normalized = value.strip().lower()
+    return len(normalized) in {40, 64} and all(
+        char in "0123456789abcdef" for char in normalized
+    )
+
+
+def _resolve_chiba_revision(
+    chiba_root: Path,
+    chiba_git: Mapping[str, Any],
+    explicit_revision: str = "",
+) -> tuple[str, str]:
+    requested = explicit_revision.strip()
+    if requested:
+        if not _is_commit_hash(requested):
+            raise ValueError("--chiba-revision 必须是完整 Git commit")
+        return requested.lower(), "cli"
+
+    git_commit = str(chiba_git.get("commit") or "").strip()
+    if git_commit:
+        if not _is_commit_hash(git_commit):
+            raise ValueError("Chiba Git commit 格式无效")
+        return git_commit.lower(), "git"
+
+    marker_path = chiba_root.parent / "shared" / "deployed-revision"
+    if marker_path.is_file():
+        deployed_revision = marker_path.read_text(encoding="utf-8").strip()
+        if not _is_commit_hash(deployed_revision):
+            raise ValueError(f"部署 revision 格式无效: {marker_path}")
+        return deployed_revision.lower(), str(marker_path)
+
+    raise ValueError(
+        "无法确定 Chiba revision：目录不是 Git 仓库且缺少 shared/deployed-revision"
+    )
+
+
 def _iter_runtime_files(plugin_root: Path) -> Iterable[Path]:
     for path in sorted(plugin_root.rglob("*")):
         if not path.is_file():
@@ -307,6 +343,7 @@ def build_fingerprint(
     plugin_root: Path,
     environment: str,
     release_id: str,
+    chiba_revision: str = "",
 ) -> dict[str, Any]:
     resolved_chiba = chiba_root.resolve()
     resolved_plugin = plugin_root.resolve()
@@ -321,11 +358,16 @@ def build_fingerprint(
     model_config = _load_toml(resolved_chiba / "config" / "model_config.toml")
     bot_config = _load_toml(resolved_chiba / "config" / "bot_config.toml")
     chiba_git = _git_state(resolved_chiba)
+    effective_chiba_revision, chiba_revision_source = _resolve_chiba_revision(
+        resolved_chiba,
+        chiba_git,
+        chiba_revision,
+    )
     plugin_git = _git_state(resolved_plugin)
 
     compatibility = {
         "chiba": {
-            "commit": chiba_git["commit"],
+            "commit": effective_chiba_revision,
             "origin": chiba_git["origin"],
         },
         "plugin": {
@@ -363,6 +405,7 @@ def build_fingerprint(
                 "plugin_root": str(resolved_plugin),
             },
             "chiba_git": chiba_git,
+            "chiba_revision_source": chiba_revision_source,
             "plugin_git": plugin_git,
             "plugin_config_source": plugin_config_record["source"],
         },
@@ -375,6 +418,11 @@ def _parse_args() -> Any:
     parser.add_argument("--plugin-root", type=Path, default=PLUGIN_ROOT)
     parser.add_argument("--environment", required=True)
     parser.add_argument("--release-id", default=DEFAULT_RELEASE_ID)
+    parser.add_argument(
+        "--chiba-revision",
+        default="",
+        help="显式指定完整 Chiba commit；部署目录默认读取上级 shared/deployed-revision",
+    )
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--require-clean",
@@ -391,14 +439,17 @@ def main() -> int:
         plugin_root=args.plugin_root,
         environment=str(args.environment),
         release_id=str(args.release_id),
+        chiba_revision=str(args.chiba_revision),
     )
     if args.require_clean:
         diagnostics = payload["diagnostics"]
         chiba_git = diagnostics["chiba_git"]
         plugin_git = diagnostics["plugin_git"]
         clean = (
-            chiba_git["is_repository"]
-            and not chiba_git["dirty"]
+            (
+                (chiba_git["is_repository"] and not chiba_git["dirty"])
+                or not chiba_git["is_repository"]
+            )
             and (
                 not plugin_git["is_repository"]
                 or not plugin_git["dirty"]
