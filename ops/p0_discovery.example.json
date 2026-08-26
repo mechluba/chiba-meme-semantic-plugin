@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "output_root": "out/p0-meme-discovery",
+  "evidence_retention_days": 14,
+  "request": {
+    "user_agent": "Mozilla/5.0",
+    "timeout_seconds": 20,
+    "minimum_interval_seconds": 0.6,
+    "max_retries": 2
+  },
+  "sources": {
+    "bilibili": {
+      "popular": {
+        "enabled": true,
+        "pages": 1,
+        "page_size": 20,
+        "max_videos": 6,
+        "allowed_categories": [
+          "游戏",
+          "单机游戏",
+          "电子竞技",
+          "手机游戏",
+          "科技",
+          "数码",
+          "娱乐"
+        ]
+      },
+      "seed_videos": [],
+      "max_parts_per_video": 1,
+      "max_segments_per_part": 2,
+      "max_danmaku_per_video": 1500,
+      "max_comments_per_video": 20
+    },
+    "room_anchors": [
+      {
+        "platform": "douyu",
+        "room_id": "6657",
+        "label": "玩机器",
+        "circle": "CS2/游戏",
+        "url": "https://www.douyu.com/6657"
+      },
+      {
+        "platform": "douyu",
+        "room_id": "9999",
+        "label": "YYF",
+        "circle": "DOTA2/游戏",
+        "url": "https://www.douyu.com/9999"
+      },
+      {
+        "platform": "douyu",
+        "room_id": "71415",
+        "label": "寅子",
+        "circle": "主机游戏/娱乐",
+        "url": "https://www.douyu.com/71415"
+      },
+      {
+        "platform": "huya",
+        "room_id": "10188",
+        "label": "DANK1NG",
+        "circle": "CS2/游戏",
+        "url": "https://www.huya.com/10188"
+      }
+    ],
+    "jsonl_inbox": {
+      "enabled": true,
+      "path": "out/p0-meme-discovery/inbox"
+    }
+  },
+  "mining": {
+    "min_occurrences": 3,
+    "min_cross_content_occurrences": 2,
+    "min_distinct_contents": 2,
+    "max_examples_per_candidate": 8
+  }
+}

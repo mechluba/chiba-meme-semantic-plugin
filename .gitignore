@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 config.toml
 runtime-fingerprint-*.json
+out/
+ops/p0_discovery.local.json
