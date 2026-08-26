@@ -22,6 +22,7 @@ from .bilibili import (
     segment_count,
 )
 from .miner import mine_candidates
+from .semantic_calibrator import calibrate_candidates, preflight_semantic_calibration
 from .semantic_enricher import enrich_candidates, preflight_semantic_enrichment
 
 
@@ -270,6 +271,14 @@ def collect_jsonl_inbox(config: dict[str, Any], repo_root: Path) -> tuple[list[d
 def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
     semantic_config = config.get("semantic_enrichment") or {}
     preflight_semantic_enrichment(semantic_config)
+    calibration_config = (
+        dict(semantic_config.get("embedding_calibration") or {}) if semantic_config.get("enabled") else {}
+    )
+    if calibration_config.get("release_dir"):
+        calibration_config["release_dir"] = str(
+            _resolve_path(repo_root, str(calibration_config["release_dir"]))
+        )
+    preflight_semantic_calibration(calibration_config)
     output_root = _resolve_path(repo_root, str(config.get("output_root") or "out/p0-meme-discovery"))
     run_at = _utc_now()
     run_id = run_at.strftime("%Y%m%dT%H%M%SZ")
@@ -319,6 +328,7 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
         semantic_config,
         cache_dir=output_root / "semantic-cache",
     )
+    calibration_report = calibrate_candidates(candidates, calibration_config)
     usage_route_count = sum(len(candidate["draft_card"]["usage_routes"]) for candidate in candidates)
     candidate_document = {
         "schema_version": 1,
@@ -337,6 +347,7 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             "note": "出现位置只作为证据；只有通过模型结构校验的交流意图 route 才进入 draft_card，且仍需人工审核。",
         },
         "semantic_enrichment_report": semantic_report,
+        "semantic_calibration_report": calibration_report,
         "summary": {
             "fetched_evidence_count": len(fetched_evidence),
             "new_evidence_count": len(new_evidence),
@@ -515,6 +526,18 @@ def _render_semantic_draft_html(candidate: dict[str, Any]) -> str:
 def _render_usage_route_html(route: dict[str, Any]) -> str:
     signals = "、".join(html.escape(str(item)) for item in route.get("required_context_signals", []))
     audience = "、".join(html.escape(str(item)) for item in route.get("audience_requirements", []))
+    calibration = route.get("semantic_calibration") or {}
+    nearest = "".join(
+        f"<li>{html.escape(str(item.get('canonical_expression')))} / "
+        f"{html.escape(str(item.get('route_tag')))} · {float(item.get('similarity') or 0):.3f}</li>"
+        for item in calibration.get("nearest_existing_routes", [])
+    )
+    calibration_html = (
+        f"<details><summary>与现有梗卡的向量近邻（{html.escape(str(calibration.get('similarity_band') or '待校准'))}）"
+        f"</summary><ul>{nearest}</ul><small>仅供人工判断合并/新增路线，不会自动合并。</small></details>"
+        if nearest
+        else ""
+    )
     return (
         f"<li class=\"intent\"><strong>{html.escape(str(route['route_tag']))}</strong>"
         f"<br><b>何时：</b>{html.escape(str(route['when']))}"
@@ -522,5 +545,5 @@ def _render_usage_route_html(route: dict[str, Any]) -> str:
         f"<br><b>回应作用：</b>{html.escape(str(route['response_function']))}"
         f"<br><b>必需信号：</b>{signals or '无'}"
         f"<br><b>受众要求：</b>{audience or '无'}"
-        f"<br><small>置信度 {route['confidence']}</small></li>"
+        f"<br><small>置信度 {route['confidence']}</small>{calibration_html}</li>"
     )

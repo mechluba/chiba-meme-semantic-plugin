@@ -3,10 +3,13 @@
 from pathlib import Path
 
 import json
+import numpy as np
 import pytest
 
 from meme_discovery.bilibili import parse_danmaku_reply
+from meme_discovery.chiba_model_config import public_model_metadata, resolve_chiba_task
 from meme_discovery.miner import mine_candidates, normalize_expression
+from meme_discovery.semantic_calibrator import calibrate_candidates
 from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
 from meme_discovery import pipeline
 
@@ -290,6 +293,70 @@ def test_semantic_enricher_rejects_vague_intent(tmp_path: Path) -> None:
         )
 
 
+def test_semantic_enricher_normalizes_non_meme_placeholder_fields(tmp_path: Path) -> None:
+    candidate = _semantic_candidate()
+    ordinary = {
+        "classification": "ordinary_expression",
+        "classification_reason": "只是普通感叹，现有证据不能支持稳定的梗语用路线。",
+        "semantic_core": "普通感叹",
+        "culture_scope": "中文日常交流",
+        "usage_routes": "不适用",
+        "required_context_signals": "不适用",
+        "hard_blocks": "不适用",
+        "positive_contexts": ["不适用"],
+        "negative_contexts": ["不适用"],
+    }
+
+    enriched, report = enrich_candidates(
+        [candidate],
+        {"enabled": True, "required": True, "base_url": "https://example.test/v1", "model": "test-model"},
+        cache_dir=tmp_path / "cache",
+        completion=lambda messages, config: json.dumps(ordinary, ensure_ascii=False),
+    )
+
+    draft = enriched[0]["draft_card"]
+    assert report["enriched_count"] == 1
+    assert draft["classification"] == "ordinary_expression"
+    assert draft["usage_routes"] == []
+    assert draft["required_context_signals"] == []
+    assert draft["positive_contexts"] == []
+
+
+def test_semantic_enricher_repairs_invalid_model_structure_once(tmp_path: Path) -> None:
+    candidate = _semantic_candidate()
+    base = {
+        "classification": "ordinary_expression",
+        "classification_reason": "只是普通问候，当前证据不能支持稳定的梗语用路线。",
+        "semantic_core": "普通问候",
+        "culture_scope": "中文日常交流",
+        "required_context_signals": [],
+        "hard_blocks": [],
+        "positive_contexts": [],
+        "negative_contexts": [],
+    }
+    outputs = [
+        {**base, "usage_routes": [{"route_tag": "不应存在"}]},
+        {**base, "usage_routes": []},
+    ]
+    calls: list[list[dict[str, str]]] = []
+
+    def completion(messages: list[dict[str, str]], config: dict[str, object]) -> str:
+        calls.append(messages)
+        return json.dumps(outputs[len(calls) - 1], ensure_ascii=False)
+
+    enriched, report = enrich_candidates(
+        [candidate],
+        {"enabled": True, "required": True, "base_url": "https://example.test/v1", "model": "test-model"},
+        cache_dir=tmp_path / "cache",
+        completion=completion,
+    )
+
+    assert enriched[0]["draft_card"]["classification"] == "ordinary_expression"
+    assert report["validation_repair_count"] == 1
+    assert len(calls) == 2
+    assert "非 meme_candidate 不得生成 usage_routes" in calls[1][-1]["content"]
+
+
 def test_required_semantic_model_fails_before_collection(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv("MISSING_TEST_LLM_KEY", raising=False)
     collected = False
@@ -316,6 +383,131 @@ def test_required_semantic_model_fails_before_collection(tmp_path: Path, monkeyp
 
     assert collected is False
     assert not (tmp_path / "out" / "discovery").exists()
+
+
+def test_chiba_model_config_resolves_task_without_exposing_key(tmp_path: Path, monkeypatch) -> None:
+    config_path = tmp_path / "model_config.toml"
+    config_path.write_text(
+        """
+[model_task_config.utils]
+model_list = ["text-main"]
+temperature = 0.4
+hard_timeout = 30
+
+[[models]]
+name = "text-main"
+model_identifier = "provider-text-id"
+api_provider = "ProviderA"
+
+[[api_providers]]
+name = "ProviderA"
+base_url = "https://example.test/v1"
+api_key = ""
+api_key_env = "TEST_CHIBA_KEY"
+""".strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("TEST_CHIBA_KEY", "secret-value")
+
+    resolved = resolve_chiba_task(config_path, "utils")
+    public = public_model_metadata(resolved)
+
+    assert resolved["api_key"] == "secret-value"
+    assert resolved["model"] == "provider-text-id"
+    assert public == {
+        "task": "utils",
+        "configured_model": "text-main",
+        "model_identifier": "provider-text-id",
+        "provider": "ProviderA",
+    }
+    assert "secret-value" not in json.dumps(public)
+
+
+def test_vector_calibration_attaches_existing_route_neighbors(tmp_path: Path, monkeypatch) -> None:
+    release_dir = tmp_path / "release"
+    release_dir.mkdir()
+    (release_dir / "vector_index.json").write_text(
+        json.dumps(
+            {
+                "embedding_model": "embedding-main",
+                "release_id": "reviewed-test-v1",
+                "dimension": 2,
+                "items": [
+                    {
+                        "card_id": "card-overload",
+                        "canonical_expression": "无量空处",
+                        "route_index": 0,
+                        "route_tag": "信息过载",
+                        "serving_scope": "circle_only",
+                        "anchor_kind": "intent",
+                        "anchor_text": "表示自己看懵了",
+                    },
+                    {
+                        "card_id": "card-win",
+                        "canonical_expression": "我们是冠军",
+                        "route_index": 0,
+                        "route_tag": "胜利庆祝",
+                        "serving_scope": "general",
+                        "anchor_kind": "intent",
+                        "anchor_text": "表达胜利喜悦",
+                    },
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    np.save(release_dir / "vectors.npy", np.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32))
+    config_path = tmp_path / "model_config.toml"
+    config_path.write_text(
+        """
+[model_task_config.embedding]
+model_list = ["embedding-main"]
+
+[[models]]
+name = "embedding-main"
+model_identifier = "provider-embedding-id"
+api_provider = "ProviderA"
+
+[[api_providers]]
+name = "ProviderA"
+base_url = "https://example.test/v1"
+api_key_env = "TEST_EMBEDDING_KEY"
+""".strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("TEST_EMBEDDING_KEY", "secret-value")
+    candidate = _semantic_candidate()
+    candidate["semantic_enrichment"] = {"status": "pending_human_review"}
+    candidate["draft_card"] = {
+        "classification": "meme_candidate",
+        "semantic_core": "信息过载而看懵",
+        "usage_routes": [
+            {
+                "when": "对方一次给出太多复杂信息时",
+                "communicative_intent": "告诉对方自己看懵并希望简化解释",
+                "response_function": "承接困惑并转入信息梳理",
+            }
+        ],
+    }
+
+    report = calibrate_candidates(
+        [candidate],
+        {
+            "enabled": True,
+            "required": True,
+            "chiba_model_config_path": str(config_path),
+            "release_dir": str(release_dir),
+            "top_k": 2,
+        },
+        embed=lambda text: [1.0, 0.0],
+    )
+
+    calibration = candidate["draft_card"]["usage_routes"][0]["semantic_calibration"]
+    assert report["calibrated_route_count"] == 1
+    assert calibration["nearest_existing_routes"][0]["card_id"] == "card-overload"
+    assert calibration["nearest_existing_routes"][0]["similarity"] == 1.0
+    assert calibration["auto_merge"] is False
 
 
 def _semantic_candidate() -> dict[str, object]:

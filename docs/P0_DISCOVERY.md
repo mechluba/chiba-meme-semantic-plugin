@@ -51,7 +51,13 @@ runs/<UTC 时间>/
 
 “即时反应”“形成共鸣”“表达情绪”“玩梗”等空泛描述会被结构校验拒绝。模型也必须区分 `meme_candidate`、`ordinary_expression` 和 `insufficient_evidence`，证据不足时不得硬编 usage route。所有合法输出仍标记为 `pending_human_review`，不能自动获得 `USE` 权限。
 
-示例配置把语义提炼设为 `enabled=true, required=true`。模型地址、名称和 API key 必须由环境变量提供；缺少任一项时任务会在发起采集前失败，不会继续生成看似完整但无法用于决策的通用模板。模型响应按输入证据哈希缓存在 `out/p0-meme-discovery/semantic-cache/`，避免定时任务重复付费。
+模型初稿如果只有 JSON 结构不合格，流水线默认允许一次带具体字段路径的结构修复；修复提示不得改变分类结论或增加新事实，修复结果仍须完整通过同一套 usage route、证据 ID、正反例和禁用条件校验。再次失败的候选保留为 `error`，不进入可用路线。
+
+示例配置把语义提炼设为 `enabled=true, required=true`。可通过 `chiba_model_config_path` 和 `chiba_text_task=utils` 只读复用 Chiba 的任务、模型与 Provider 配置；适合让任务与 Chiba 部署在同一受控环境中运行，密钥不需要复制到候选文件或审核报告。没有共址配置时，也可继续通过 `MEME_DISCOVERY_LLM_*` 环境变量注入 OpenAI 兼容模型。缺少任一必需配置时任务会在发起采集前失败，不会继续生成看似完整但无法用于决策的通用模板。模型响应按输入证据哈希缓存，避免定时任务重复付费。
+
+启用 `embedding_calibration` 后，流水线会用 Chiba 的 `embedding` 任务为每条合法 usage route 生成向量，并和已审核 Release 的多原型向量比较。审核页会展示最接近的旧梗卡、route 和相似度，用来判断“已有卡别名 / 已有卡新路线 / 可能是新梗”。相似度没有自动合并权限，也不会改变 `pending_human_review` 状态；配置的模型名称和向量维度必须与目标 Release 一致。通用示例默认关闭这一可选阶段；与 Chiba 共址运行并填好模型配置路径后再开启。
+
+如果采集和模型调用需要分开运行，可以先生成关闭语义阶段的候选文件，再用 `scripts/enrich_pending_candidates.py` 在持有 Chiba 模型配置的受控环境中另存语义 JSON 与审核页。该脚本不覆盖输入文件，也不发布 Release。
 
 语义模型会收到候选短语、脱敏后的代表性社区文本、内容标题和邻近弹幕，不会收到评论者/观众身份字段。接入模型前仍需确认所选提供方的数据处理与保留政策允许这类公开社区语料；不满足时应保持任务失败，而不是切回无语义模板。
 

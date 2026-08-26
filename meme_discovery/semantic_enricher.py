@@ -6,11 +6,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 import hashlib
+import http.client
 import json
 import os
 import time
 import urllib.error
 import urllib.request
+
+from .chiba_model_config import ChibaModelConfigError, public_model_metadata, resolve_chiba_task
 
 
 PROMPT_VERSION = "communicative-intent-route-v1"
@@ -97,6 +100,7 @@ def enrich_candidates(
     api_completion = completion or _OpenAICompatibleCompletion(resolved)
     enriched_count = 0
     cache_hit_count = 0
+    validation_repair_count = 0
     failures: list[dict[str, str]] = []
     for index, candidate in enumerate(candidates):
         if index >= selected_count:
@@ -127,11 +131,20 @@ def enrich_candidates(
                 cache_hit_count += 1
             else:
                 raw = api_completion(_messages(model_input), resolved)
-                draft = validate_semantic_draft(
-                    _parse_json_object(raw),
-                    allowed_evidence_ids=_evidence_ids(candidate),
-                    allowed_realizations=_allowed_realizations(candidate),
-                )
+                repair_attempts = max(0, int(config.get("validation_repair_attempts", 1)))
+                for repair_index in range(repair_attempts + 1):
+                    try:
+                        draft = validate_semantic_draft(
+                            _parse_json_object(raw),
+                            allowed_evidence_ids=_evidence_ids(candidate),
+                            allowed_realizations=_allowed_realizations(candidate),
+                        )
+                        break
+                    except (SemanticEnrichmentError, json.JSONDecodeError) as exc:
+                        if repair_index >= repair_attempts:
+                            raise
+                        raw = api_completion(_repair_messages(model_input, raw, str(exc)), resolved)
+                        validation_repair_count += 1
                 _write_json(
                     cache_path,
                     {
@@ -158,11 +171,12 @@ def enrich_candidates(
     return candidates, {
         "status": "ok" if not failures else "partial",
         "prompt_version": PROMPT_VERSION,
-        "model": resolved.get("model"),
+        "model": public_model_metadata(resolved) if resolved.get("configured_model_name") else resolved.get("model"),
         "candidate_count": len(candidates),
         "selected_count": selected_count,
         "enriched_count": enriched_count,
         "cache_hit_count": cache_hit_count,
+        "validation_repair_count": validation_repair_count,
         "failures": failures,
     }
 
@@ -184,14 +198,22 @@ def validate_semantic_draft(
         "semantic_core": _optional_text(value.get("semantic_core")),
         "culture_scope": _optional_text(value.get("culture_scope")),
         "usage_routes": [],
-        "required_context_signals": _text_list(value.get("required_context_signals")),
-        "hard_blocks": _text_list(value.get("hard_blocks")),
+        "required_context_signals": [],
+        "hard_blocks": [],
         "positive_contexts": [],
         "negative_contexts": [],
     }
     routes = value.get("usage_routes") or []
+    if classification != "meme_candidate":
+        if isinstance(routes, list) and routes:
+            raise SemanticEnrichmentError("非 meme_candidate 不得生成 usage_routes")
+        return result
     if not isinstance(routes, list):
         raise SemanticEnrichmentError("usage_routes 必须是数组")
+    result["required_context_signals"] = _text_list(
+        value.get("required_context_signals"), field="required_context_signals"
+    )
+    result["hard_blocks"] = _text_list(value.get("hard_blocks"), field="hard_blocks")
     for route in routes:
         if not isinstance(route, dict):
             raise SemanticEnrichmentError("usage_route 必须是对象")
@@ -200,14 +222,16 @@ def validate_semantic_draft(
             token in intent for token in ("即时反应", "形成共鸣")
         ):
             raise SemanticEnrichmentError(f"communicative_intent 过于空泛: {intent}")
-        evidence_ids = _text_list(route.get("evidence_ids"))
+        evidence_ids = _text_list(route.get("evidence_ids"), field="usage_route.evidence_ids")
         unknown_ids = set(evidence_ids) - allowed_evidence_ids
         if unknown_ids:
             raise SemanticEnrichmentError(f"usage_route 引用了不存在的证据: {sorted(unknown_ids)}")
         confidence = route.get("confidence")
         if not isinstance(confidence, (int, float)) or isinstance(confidence, bool) or not 0 <= confidence <= 1:
             raise SemanticEnrichmentError("usage_route.confidence 必须在 0 到 1 之间")
-        realizations = _text_list(route.get("allowed_realizations"), min_items=1)
+        realizations = _text_list(
+            route.get("allowed_realizations"), min_items=1, field="usage_route.allowed_realizations"
+        )
         unknown_realizations = set(realizations) - allowed_realizations
         if unknown_realizations:
             raise SemanticEnrichmentError(f"usage_route 生成了证据中没有的表达变体: {sorted(unknown_realizations)}")
@@ -217,8 +241,14 @@ def validate_semantic_draft(
                 "when": _required_text(route, "when", min_length=8),
                 "communicative_intent": intent,
                 "response_function": _required_text(route, "response_function", min_length=6),
-                "required_context_signals": _text_list(route.get("required_context_signals"), min_items=2),
-                "audience_requirements": _text_list(route.get("audience_requirements")),
+                "required_context_signals": _text_list(
+                    route.get("required_context_signals"),
+                    min_items=2,
+                    field="usage_route.required_context_signals",
+                ),
+                "audience_requirements": _text_list(
+                    route.get("audience_requirements"), field="usage_route.audience_requirements"
+                ),
                 "allowed_realizations": realizations,
                 "evidence_ids": evidence_ids,
                 "confidence": round(float(confidence), 3),
@@ -263,12 +293,29 @@ def validate_semantic_draft(
             raise SemanticEnrichmentError("meme_candidate 至少需要 2 个正例")
         if len(result["negative_contexts"]) < 3:
             raise SemanticEnrichmentError("meme_candidate 至少需要 3 个负例")
-    elif result["usage_routes"]:
-        raise SemanticEnrichmentError("非 meme_candidate 不得生成 usage_routes")
     return result
 
 
 def _resolve_model_config(config: dict[str, Any]) -> dict[str, Any]:
+    chiba_config_path = str(config.get("chiba_model_config_path") or "").strip()
+    if chiba_config_path:
+        task_name = str(config.get("chiba_text_task") or "utils").strip()
+        try:
+            resolved = resolve_chiba_task(chiba_config_path, task_name)
+        except ChibaModelConfigError as exc:
+            raise SemanticEnrichmentError(str(exc)) from exc
+        resolved.update(
+            {
+                "api_key_env": "Chiba Provider 配置",
+                "temperature": float(config.get("temperature", resolved["temperature"])),
+                "max_tokens": int(config.get("max_tokens", 2200)),
+                "timeout_seconds": float(config.get("timeout_seconds", resolved["timeout_seconds"])),
+                "max_retries": int(config.get("max_retries", resolved["max_retries"])),
+                "minimum_interval_seconds": float(config.get("minimum_interval_seconds", 0.5)),
+                "response_format_json": bool(config.get("response_format_json", True)),
+            }
+        )
+        return resolved
     api_key_env = str(config.get("api_key_env") or "MEME_DISCOVERY_LLM_API_KEY").strip()
     return {
         "base_url": str(config.get("base_url") or os.environ.get("MEME_DISCOVERY_LLM_BASE_URL") or "").rstrip("/"),
@@ -298,6 +345,9 @@ class _OpenAICompatibleCompletion:
             "temperature": self.config["temperature"],
             "max_tokens": self.config["max_tokens"],
         }
+        for key, value in (self.config.get("extra_params") or {}).items():
+            if key not in {"model", "messages", "temperature", "max_tokens", "response_format"}:
+                body[key] = value
         if self.config["response_format_json"]:
             body["response_format"] = {"type": "json_object"}
         endpoint = self.config["base_url"] + "/chat/completions"
@@ -321,7 +371,15 @@ class _OpenAICompatibleCompletion:
                 with urllib.request.urlopen(request, timeout=self.config["timeout_seconds"]) as response:
                     payload = json.loads(response.read(4 * 1024 * 1024).decode("utf-8"))
                 return str(payload["choices"][0]["message"]["content"] or "").strip()
-            except (urllib.error.URLError, TimeoutError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            except (
+                urllib.error.URLError,
+                http.client.HTTPException,
+                TimeoutError,
+                OSError,
+                KeyError,
+                TypeError,
+                json.JSONDecodeError,
+            ) as exc:
                 last_error = exc
                 if attempt < self.config["max_retries"]:
                     time.sleep(min(2**attempt, 4))
@@ -353,6 +411,24 @@ def _messages(model_input: dict[str, Any]) -> list[dict[str, str]]:
                 "meme_candidate 需要 1-3 条 route、至少2个全局 required_context_signals、2个 hard_blocks、"
                 "2个正例和3个 SKIP 负例。非梗不得硬编 route。\n\n候选证据 JSON：\n"
                 + json.dumps(model_input, ensure_ascii=False, indent=2)
+            ),
+        },
+    ]
+
+
+def _repair_messages(model_input: dict[str, Any], invalid_output: str, error: str) -> list[dict[str, str]]:
+    return [
+        *_messages(model_input),
+        {"role": "assistant", "content": invalid_output},
+        {
+            "role": "user",
+            "content": (
+                f"上面的 JSON 未通过结构校验：{error}。只修复结构，不改变基于证据的分类结论，不增加新事实。"
+                "如果 classification 是 meme_candidate，所有字符串数组必须真的是 JSON 数组，正反例必须是对象数组，"
+                "usage_routes 的 evidence_ids 和 allowed_realizations 必须继续来自输入证据。"
+                "positive_contexts 每项必须含 context、user_intent、expected_action，且 expected_action 只能是 USE 或 "
+                "UNDERSTAND_ONLY；negative_contexts 每项必须含 context、reason、expected_action，且 expected_action 必须是 SKIP。"
+                "如果 classification 不是 meme_candidate，usage_routes 必须是空数组。只输出修复后的完整 JSON 对象。"
             ),
         },
     ]
@@ -440,15 +516,15 @@ def _optional_text(value: Any) -> str | None:
     return text or None
 
 
-def _text_list(value: Any, *, min_items: int = 0) -> list[str]:
+def _text_list(value: Any, *, min_items: int = 0, field: str = "字段") -> list[str]:
     if value is None:
         items: list[str] = []
     elif isinstance(value, list):
         items = [str(item).strip() for item in value if str(item).strip()]
     else:
-        raise SemanticEnrichmentError("字段必须是字符串数组")
+        raise SemanticEnrichmentError(f"{field} 必须是字符串数组")
     if len(items) < min_items:
-        raise SemanticEnrichmentError(f"字符串数组至少需要 {min_items} 项")
+        raise SemanticEnrichmentError(f"{field} 至少需要 {min_items} 项")
     return items
 
 

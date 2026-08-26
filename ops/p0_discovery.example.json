@@ -11,6 +11,8 @@
   "semantic_enrichment": {
     "enabled": true,
     "required": true,
+    "chiba_model_config_path": "",
+    "chiba_text_task": "utils",
     "base_url": "",
     "api_key_env": "MEME_DISCOVERY_LLM_API_KEY",
     "model": "",
@@ -20,9 +22,19 @@
     "max_retries": 2,
     "minimum_interval_seconds": 0.5,
     "response_format_json": true,
+    "validation_repair_attempts": 1,
     "max_candidates_per_run": 0,
     "max_occurrence_scopes": 3,
-    "max_contexts_per_scope": 3
+    "max_contexts_per_scope": 3,
+    "embedding_calibration": {
+      "enabled": false,
+      "required": true,
+      "chiba_model_config_path": "",
+      "chiba_embedding_task": "embedding",
+      "release_dir": "resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1",
+      "top_k": 4,
+      "minimum_interval_seconds": 0.2
+    }
   },
   "sources": {
     "bilibili": {

@@ -18,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from meme_discovery import run_discovery  # noqa: E402
+from meme_discovery.semantic_calibrator import SemanticCalibrationError  # noqa: E402
 from meme_discovery.semantic_enricher import SemanticEnrichmentError  # noqa: E402
 
 
@@ -54,8 +55,8 @@ def main() -> int:
             return 3
         try:
             result = run_discovery(config, repo_root=REPO_ROOT)
-        except SemanticEnrichmentError as exc:
-            print(f"语义提炼失败：{exc}", file=sys.stderr)
+        except (SemanticEnrichmentError, SemanticCalibrationError) as exc:
+            print(f"语义流程失败：{exc}", file=sys.stderr)
             return 4
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
