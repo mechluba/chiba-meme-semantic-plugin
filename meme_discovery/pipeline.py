@@ -22,6 +22,7 @@ from .bilibili import (
     segment_count,
 )
 from .miner import mine_candidates
+from .semantic_enricher import enrich_candidates, preflight_semantic_enrichment
 
 
 def _utc_now() -> datetime:
@@ -267,6 +268,8 @@ def collect_jsonl_inbox(config: dict[str, Any], repo_root: Path) -> tuple[list[d
 
 
 def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
+    semantic_config = config.get("semantic_enrichment") or {}
+    preflight_semantic_enrichment(semantic_config)
     output_root = _resolve_path(repo_root, str(config.get("output_root") or "out/p0-meme-discovery"))
     run_at = _utc_now()
     run_id = run_at.strftime("%Y%m%dT%H%M%SZ")
@@ -310,7 +313,13 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             else "公开 Web 端小流量研究入口；不作为稳定 Open API 或批量再分发授权。"
         )
     candidates = mine_candidates(rolling_evidence, config.get("mining") or {})
-    usage_scene_count = sum(len(candidate["observed_usage_scenarios"]) for candidate in candidates)
+    occurrence_context_count = sum(len(candidate["occurrence_contexts"]) for candidate in candidates)
+    candidates, semantic_report = enrich_candidates(
+        candidates,
+        semantic_config,
+        cache_dir=output_root / "semantic-cache",
+    )
+    usage_route_count = sum(len(candidate["draft_card"]["usage_routes"]) for candidate in candidates)
     candidate_document = {
         "schema_version": 1,
         "pipeline": "p0_meme_discovery_shadow",
@@ -322,18 +331,20 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             "note": "重复表达只是待审信号，不代表已经认定为梗；审核前不得进入运行时 Release。",
         },
         "method_limitations": "当前只按跨内容/内容内重复生成表层信号；普通话、刷屏仪式和引用台词必须人工排除。",
-        "usage_scene_policy": {
-            "basis": "observed_context_only",
-            "auto_semantic_confirmation": False,
-            "note": "场景草稿按圈层和来源聚合，并引用真实内容与邻近弹幕；准确梗义和触发条件仍需人工确认。",
+        "semantic_policy": {
+            "occurrence_context_is_usage_route": False,
+            "auto_publish": False,
+            "note": "出现位置只作为证据；只有通过模型结构校验的交流意图 route 才进入 draft_card，且仍需人工审核。",
         },
+        "semantic_enrichment_report": semantic_report,
         "summary": {
             "fetched_evidence_count": len(fetched_evidence),
             "new_evidence_count": len(new_evidence),
             "rolling_evidence_count": len(rolling_evidence),
             "evidence_retention_days": retention_days,
             "candidate_count": len(candidates),
-            "usage_scene_count": usage_scene_count,
+            "occurrence_context_count": occurrence_context_count,
+            "usage_route_count": usage_route_count,
         },
         "candidates": candidates,
     }
@@ -354,7 +365,8 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
         "pending_review_file": str(run_dir / "candidates.pending-review.json"),
         "review_page": str(run_dir / "review-queue.html"),
         "candidate_count": len(candidates),
-        "usage_scene_count": usage_scene_count,
+        "occurrence_context_count": occurrence_context_count,
+        "usage_route_count": usage_route_count,
         "fetched_evidence_count": len(fetched_evidence),
         "new_evidence_count": len(new_evidence),
         "rolling_evidence_count": len(rolling_evidence),
@@ -424,14 +436,16 @@ def _render_review_html(document: dict[str, Any]) -> str:
             f"<li><code>{html.escape(str(item['content_id']))}</code> {html.escape(str(item['message']))}</li>"
             for item in candidate["examples"]
         )
-        scenes = "".join(_render_scene_html(scene) for scene in candidate["observed_usage_scenarios"])
+        occurrence_contexts = "".join(_render_occurrence_context_html(scope) for scope in candidate["occurrence_contexts"])
+        semantic = _render_semantic_draft_html(candidate)
         signals = candidate["signals"]
         rows.append(
             "<article>"
             f"<h2>{html.escape(candidate['phrase'])}</h2>"
             f"<p>待审 · {html.escape(candidate['why_queued'])} · {signals['message_count']} 条 / "
             f"{signals['distinct_content_count']} 个内容</p>"
-            f"<h3>常见使用场景草稿</h3><ol>{scenes}</ol><h3>重复表达样本</h3><ul>{examples}</ul>"
+            f"{semantic}<h3>出现语境证据（不是使用场景）</h3><ol>{occurrence_contexts}</ol>"
+            f"<h3>重复表达样本</h3><ul>{examples}</ul>"
             f"<p><small>{html.escape(candidate['candidate_id'])}</small></p>"
             "</article>"
         )
@@ -441,13 +455,14 @@ def _render_review_html(document: dict[str, Any]) -> str:
 <title>热梗候选人工审核</title><style>
 body{{font:16px/1.6 system-ui,sans-serif;max-width:920px;margin:40px auto;padding:0 20px;color:#202124}}
 header{{border-bottom:1px solid #ddd;margin-bottom:24px}}article{{border:1px solid #ddd;border-radius:12px;padding:8px 20px;margin:16px 0}}
-code{{color:#666}}small{{color:#777}}
+code{{color:#666}}small{{color:#777}}.warning{{background:#fff4d6;border-left:4px solid #d99b00;padding:10px}}
+.intent{{background:#eef7ff;border-left:4px solid #2484c6;padding:10px}}
 </style></head><body><header><h1>热梗候选人工审核</h1>
 <p>运行 {html.escape(document['run_id'])}；滚动窗口共 {document['summary']['rolling_evidence_count']} 条证据，
 {document['summary']['candidate_count']} 个候选。所有候选均为 pending，不会自动发布。</p></header>{body}</body></html>"""
 
 
-def _render_scene_html(scene: dict[str, Any]) -> str:
+def _render_occurrence_context_html(scene: dict[str, Any]) -> str:
     contexts: list[str] = []
     for context in scene["representative_contexts"]:
         position = context.get("position_seconds")
@@ -459,7 +474,53 @@ def _render_scene_html(scene: dict[str, Any]) -> str:
             f"{html.escape(str(context['message']))}{nearby_html}</li>"
         )
     return (
-        f"<li><strong>{html.escape(str(scene['draft_description']))}</strong>"
+        f"<li><strong>{html.escape(str(scene['scope_description']))}</strong>"
         f"<br><small>{scene['evidence_count']} 条证据 / {scene['distinct_content_count']} 个内容 · "
         f"{html.escape(str(scene['confidence']))} · 待审</small><ul>{''.join(contexts)}</ul></li>"
+    )
+
+
+def _render_semantic_draft_html(candidate: dict[str, Any]) -> str:
+    enrichment = candidate.get("semantic_enrichment") or {}
+    draft = candidate.get("draft_card") or {}
+    if enrichment.get("status") != "pending_human_review":
+        reason = enrichment.get("reason") or enrichment.get("error") or "未产生合法语义草稿"
+        return (
+            "<h3>交流意图与使用路线</h3>"
+            f"<p class=\"warning\">不可用于千叶决策：{html.escape(str(reason))}。</p>"
+        )
+    routes = "".join(_render_usage_route_html(route) for route in draft.get("usage_routes", []))
+    required = "、".join(html.escape(str(item)) for item in draft.get("required_context_signals", []))
+    blocks = "、".join(html.escape(str(item)) for item in draft.get("hard_blocks", []))
+    positives = "".join(
+        f"<li>{html.escape(str(item['context']))} → {html.escape(str(item['expected_action']))}"
+        f"（{html.escape(str(item['user_intent']))}）</li>"
+        for item in draft.get("positive_contexts", [])
+    )
+    negatives = "".join(
+        f"<li>{html.escape(str(item['context']))} → SKIP（{html.escape(str(item['reason']))}）</li>"
+        for item in draft.get("negative_contexts", [])
+    )
+    return (
+        "<h3>交流意图与使用路线（模型草稿，待人审）</h3>"
+        f"<p><strong>分类：</strong>{html.escape(str(draft.get('classification')))} · "
+        f"{html.escape(str(draft.get('classification_reason')))}</p>"
+        f"<p><strong>语义核心：</strong>{html.escape(str(draft.get('semantic_core') or '无'))}</p>"
+        f"<ol>{routes}</ol><p><strong>全局必需信号：</strong>{required or '无'}</p>"
+        f"<p><strong>硬禁用：</strong>{blocks or '无'}</p>"
+        f"<details><summary>正反例</summary><h4>正例</h4><ul>{positives}</ul><h4>负例</h4><ul>{negatives}</ul></details>"
+    )
+
+
+def _render_usage_route_html(route: dict[str, Any]) -> str:
+    signals = "、".join(html.escape(str(item)) for item in route.get("required_context_signals", []))
+    audience = "、".join(html.escape(str(item)) for item in route.get("audience_requirements", []))
+    return (
+        f"<li class=\"intent\"><strong>{html.escape(str(route['route_tag']))}</strong>"
+        f"<br><b>何时：</b>{html.escape(str(route['when']))}"
+        f"<br><b>交流意图：</b>{html.escape(str(route['communicative_intent']))}"
+        f"<br><b>回应作用：</b>{html.escape(str(route['response_function']))}"
+        f"<br><b>必需信号：</b>{signals or '无'}"
+        f"<br><b>受众要求：</b>{audience or '无'}"
+        f"<br><small>置信度 {route['confidence']}</small></li>"
     )

@@ -74,7 +74,7 @@ def mine_candidates(evidence: list[dict[str, Any]], config: dict[str, Any]) -> l
             }
             for item in items[:max_examples]
         ]
-        usage_scenarios = _build_usage_scenarios(
+        occurrence_contexts = _build_occurrence_contexts(
             phrase=phrase,
             normalized_expression=normalized,
             items=items,
@@ -99,7 +99,7 @@ def mine_candidates(evidence: list[dict[str, Any]], config: dict[str, Any]) -> l
                     "在多个独立内容中重复出现" if cross_content else "在单个内容或直播场次中高频重复"
                 ),
                 "examples": examples,
-                "observed_usage_scenarios": usage_scenarios,
+                "occurrence_contexts": occurrence_contexts,
                 "review": {
                     "status": "pending",
                     "decision": None,
@@ -108,10 +108,16 @@ def mine_candidates(evidence: list[dict[str, Any]], config: dict[str, Any]) -> l
                     "notes": "",
                 },
                 "draft_card": {
+                    "classification": None,
+                    "classification_reason": None,
                     "semantic_core": None,
-                    "usage_scenarios": [scene["draft_description"] for scene in usage_scenarios],
+                    "culture_scope": None,
+                    "usage_routes": [],
+                    "required_context_signals": [],
+                    "hard_blocks": [],
+                    "positive_contexts": [],
+                    "negative_contexts": [],
                     "allowed_realizations": [],
-                    "hard_negative_contexts": [],
                 },
             }
         )
@@ -141,7 +147,7 @@ def _build_progress_index(
     return result
 
 
-def _build_usage_scenarios(
+def _build_occurrence_contexts(
     *,
     phrase: str,
     normalized_expression: str,
@@ -154,7 +160,7 @@ def _build_usage_scenarios(
         circle = str(item.get("circle") or "未分类").strip() or "未分类"
         source_kind = str(item.get("source_kind") or "unknown").strip() or "unknown"
         grouped[(circle, source_kind)].append(item)
-    max_scenarios = max(1, int(config.get("max_usage_scenarios", 3)))
+    max_scenarios = max(1, int(config.get("max_occurrence_context_scopes", 3)))
     ranked = sorted(
         grouped.items(),
         key=lambda pair: (
@@ -176,7 +182,7 @@ def _build_usage_scenarios(
                 "rank": rank,
                 "circle": circle,
                 "source_kind": source_kind,
-                "draft_description": _scene_description(phrase, circle, source_kind),
+                "scope_description": _scope_description(phrase, circle, source_kind),
                 "basis": "observed_context_only",
                 "confidence": "observed_cross_content" if len(content_ids) >= 2 else "observed_single_content",
                 "evidence_count": len(scene_items),
@@ -195,23 +201,23 @@ def _build_usage_scenarios(
     return result
 
 
-def _scene_description(phrase: str, circle: str, source_kind: str) -> str:
+def _scope_description(phrase: str, circle: str, source_kind: str) -> str:
     if source_kind == "danmaku":
         return (
-            f"在{circle}相关视频的弹幕中，当画面推进到具体节点时，观众使用“{phrase}”作即时反应或形成共鸣；"
-            "具体交流意图需结合代表性时间窗人工确认。"
+            f"“{phrase}”在{circle}相关视频的弹幕时间窗中重复出现；"
+            "这里只记录出现位置与前后证据，不代表已经判断其交流意图。"
         )
     if source_kind == "comment":
         return (
-            f"在{circle}相关视频的评论区，观众围绕视频整体、发布信息或内容观点使用“{phrase}”；"
-            "具体态度和指代需结合原评论人工确认。"
+            f"“{phrase}”在{circle}相关视频的评论区重复出现；"
+            "这里只记录来源范围，不代表已经形成可供对话使用的 usage route。"
         )
     if source_kind == "authorized_live_export":
         return (
-            f"在{circle}直播间中，观众随直播事件即时使用“{phrase}”，或用它参与观众间接梗和共鸣；"
-            "具体触发事件需结合授权导出的同场上下文人工确认。"
+            f"“{phrase}”在{circle}直播间授权导出中重复出现；"
+            "这里只记录同场证据，具体交流动作必须经过语义提炼和人工审核。"
         )
-    return f"在{circle}相关内容的 {source_kind} 语料中观察到“{phrase}”重复使用；具体场景需人工确认。"
+    return f"在{circle}相关内容的 {source_kind} 语料中观察到“{phrase}”重复使用；尚未判断交流意图。"
 
 
 def _representative_contexts(

@@ -17,6 +17,9 @@
 
 ```bash
 cp ops/p0_discovery.example.json ops/p0_discovery.local.json
+export MEME_DISCOVERY_LLM_BASE_URL='https://your-openai-compatible-endpoint/v1'
+export MEME_DISCOVERY_LLM_MODEL='your-semantic-model'
+export MEME_DISCOVERY_LLM_API_KEY='从本地密钥管理器注入，不写进配置文件'
 python3 scripts/run_p0_discovery.py --config ops/p0_discovery.local.json
 ```
 
@@ -35,7 +38,22 @@ runs/<UTC 时间>/
 
 `source-report.json` 会区分真实拿到文本、仅房间元数据和错误，不把降级误报成采集成功。消息 ID 生成幂等键，同一条弹幕不会在后续运行中重复写入；候选从默认 14 天的 `evidence-store.jsonl` 滚动窗口生成，过期证据会从这个本地滚动仓移除。每条证据会写入 `retention_deadline` 和来源政策备注。
 
-每个候选还会生成 `observed_usage_scenarios`：按圈层与弹幕、评论或授权直播来源聚合，统计证据数和独立内容数，并展示代表性来源。弹幕场景会附带默认前后 6 秒内的邻近弹幕，帮助审核人判断它是在什么画面节点、以什么交流动作出现。`draft_card.usage_scenarios` 会同步写入可读场景草稿，但状态仍是 `pending`；程序不会从标题或邻近文本自动断言准确梗义。普通高频话、房间仪式或刷屏噪声仍需人工拒绝。
+每个候选先生成 `occurrence_contexts`：按圈层与弹幕、评论或授权直播来源聚合，统计证据数和独立内容数，并展示代表性来源。弹幕证据附带默认前后 6 秒内的邻近弹幕。这个字段只回答“它出现在哪里、前后发生了什么”，**不能**作为千叶的使用场景。
+
+随后，必需的语义模型阶段将证据提炼到 `draft_card`：
+
+- `semantic_core`：表达在互动中的核心含义；
+- `usage_routes[].when`：什么对话事件或用户状态下可能适用；
+- `usage_routes[].communicative_intent`：说话者想向对方完成的具体交流动作，例如邀请共同惊讶、用自嘲缓和失败、反讽式质疑或请求解释；
+- `usage_routes[].response_function`：千叶接这个梗会对当前互动起什么作用；
+- route 级和全局 `required_context_signals`；
+- `audience_requirements`、`hard_blocks`、正例和 SKIP 负例。
+
+“即时反应”“形成共鸣”“表达情绪”“玩梗”等空泛描述会被结构校验拒绝。模型也必须区分 `meme_candidate`、`ordinary_expression` 和 `insufficient_evidence`，证据不足时不得硬编 usage route。所有合法输出仍标记为 `pending_human_review`，不能自动获得 `USE` 权限。
+
+示例配置把语义提炼设为 `enabled=true, required=true`。模型地址、名称和 API key 必须由环境变量提供；缺少任一项时任务会在发起采集前失败，不会继续生成看似完整但无法用于决策的通用模板。模型响应按输入证据哈希缓存在 `out/p0-meme-discovery/semantic-cache/`，避免定时任务重复付费。
+
+语义模型会收到候选短语、脱敏后的代表性社区文本、内容标题和邻近弹幕，不会收到评论者/观众身份字段。接入模型前仍需确认所选提供方的数据处理与保留政策允许这类公开社区语料；不满足时应保持任务失败，而不是切回无语义模板。
 
 ## 接入授权直播导出
 
@@ -53,4 +71,4 @@ runs/<UTC 时间>/
 
 ## 人工审核后的下一步
 
-审核人应补充语义、使用场景、反例和风险，并明确选择 `USE`、`UNDERSTAND_ONLY` 或 `REJECT`。通过审核的内容仍需按 [MAINTENANCE.md](MAINTENANCE.md) 新建不可变 Release、离线回放和测试环境验收，不能直接复制待审 JSON 到线上梗包。
+审核人应逐条核对语义核心、交流意图、必需信号、受众条件、反例和风险，并明确选择 `USE`、`UNDERSTAND_ONLY` 或 `REJECT`。通过审核的内容仍需按 [MAINTENANCE.md](MAINTENANCE.md) 新建不可变 Release、离线回放和测试环境验收，不能直接复制待审 JSON 到线上梗包。

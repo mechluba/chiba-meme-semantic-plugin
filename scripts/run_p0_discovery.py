@@ -18,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from meme_discovery import run_discovery  # noqa: E402
+from meme_discovery.semantic_enricher import SemanticEnrichmentError  # noqa: E402
 
 
 def _load_config(path: Path) -> dict[str, Any]:
@@ -51,7 +52,11 @@ def main() -> int:
         except BlockingIOError:
             print("已有热梗发现任务正在运行，本次跳过。", file=sys.stderr)
             return 3
-        result = run_discovery(config, repo_root=REPO_ROOT)
+        try:
+            result = run_discovery(config, repo_root=REPO_ROOT)
+        except SemanticEnrichmentError as exc:
+            print(f"语义提炼失败：{exc}", file=sys.stderr)
+            return 4
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

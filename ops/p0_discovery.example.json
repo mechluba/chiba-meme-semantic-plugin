@@ -8,6 +8,22 @@
     "minimum_interval_seconds": 0.6,
     "max_retries": 2
   },
+  "semantic_enrichment": {
+    "enabled": true,
+    "required": true,
+    "base_url": "",
+    "api_key_env": "MEME_DISCOVERY_LLM_API_KEY",
+    "model": "",
+    "temperature": 0.2,
+    "max_tokens": 2200,
+    "timeout_seconds": 120,
+    "max_retries": 2,
+    "minimum_interval_seconds": 0.5,
+    "response_format_json": true,
+    "max_candidates_per_run": 0,
+    "max_occurrence_scopes": 3,
+    "max_contexts_per_scope": 3
+  },
   "sources": {
     "bilibili": {
       "popular": {
@@ -71,7 +87,7 @@
     "min_cross_content_occurrences": 2,
     "min_distinct_contents": 2,
     "max_examples_per_candidate": 8,
-    "max_usage_scenarios": 3,
+    "max_occurrence_context_scopes": 3,
     "max_scene_contexts": 3,
     "context_window_seconds": 6,
     "max_nearby_messages": 6
