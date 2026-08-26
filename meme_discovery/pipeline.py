@@ -310,6 +310,7 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             else "公开 Web 端小流量研究入口；不作为稳定 Open API 或批量再分发授权。"
         )
     candidates = mine_candidates(rolling_evidence, config.get("mining") or {})
+    usage_scene_count = sum(len(candidate["observed_usage_scenarios"]) for candidate in candidates)
     candidate_document = {
         "schema_version": 1,
         "pipeline": "p0_meme_discovery_shadow",
@@ -321,12 +322,18 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             "note": "重复表达只是待审信号，不代表已经认定为梗；审核前不得进入运行时 Release。",
         },
         "method_limitations": "当前只按跨内容/内容内重复生成表层信号；普通话、刷屏仪式和引用台词必须人工排除。",
+        "usage_scene_policy": {
+            "basis": "observed_context_only",
+            "auto_semantic_confirmation": False,
+            "note": "场景草稿按圈层和来源聚合，并引用真实内容与邻近弹幕；准确梗义和触发条件仍需人工确认。",
+        },
         "summary": {
             "fetched_evidence_count": len(fetched_evidence),
             "new_evidence_count": len(new_evidence),
             "rolling_evidence_count": len(rolling_evidence),
             "evidence_retention_days": retention_days,
             "candidate_count": len(candidates),
+            "usage_scene_count": usage_scene_count,
         },
         "candidates": candidates,
     }
@@ -347,6 +354,7 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
         "pending_review_file": str(run_dir / "candidates.pending-review.json"),
         "review_page": str(run_dir / "review-queue.html"),
         "candidate_count": len(candidates),
+        "usage_scene_count": usage_scene_count,
         "fetched_evidence_count": len(fetched_evidence),
         "new_evidence_count": len(new_evidence),
         "rolling_evidence_count": len(rolling_evidence),
@@ -416,12 +424,14 @@ def _render_review_html(document: dict[str, Any]) -> str:
             f"<li><code>{html.escape(str(item['content_id']))}</code> {html.escape(str(item['message']))}</li>"
             for item in candidate["examples"]
         )
+        scenes = "".join(_render_scene_html(scene) for scene in candidate["observed_usage_scenarios"])
         signals = candidate["signals"]
         rows.append(
             "<article>"
             f"<h2>{html.escape(candidate['phrase'])}</h2>"
             f"<p>待审 · {html.escape(candidate['why_queued'])} · {signals['message_count']} 条 / "
-            f"{signals['distinct_content_count']} 个内容</p><ul>{examples}</ul>"
+            f"{signals['distinct_content_count']} 个内容</p>"
+            f"<h3>常见使用场景草稿</h3><ol>{scenes}</ol><h3>重复表达样本</h3><ul>{examples}</ul>"
             f"<p><small>{html.escape(candidate['candidate_id'])}</small></p>"
             "</article>"
         )
@@ -435,3 +445,21 @@ code{{color:#666}}small{{color:#777}}
 </style></head><body><header><h1>热梗候选人工审核</h1>
 <p>运行 {html.escape(document['run_id'])}；滚动窗口共 {document['summary']['rolling_evidence_count']} 条证据，
 {document['summary']['candidate_count']} 个候选。所有候选均为 pending，不会自动发布。</p></header>{body}</body></html>"""
+
+
+def _render_scene_html(scene: dict[str, Any]) -> str:
+    contexts: list[str] = []
+    for context in scene["representative_contexts"]:
+        position = context.get("position_seconds")
+        position_text = f" · {position:.1f}s" if isinstance(position, (int, float)) else ""
+        nearby = " / ".join(str(item["message"]) for item in context.get("nearby_messages", []))
+        nearby_html = f"<br><small>前后文：{html.escape(nearby)}</small>" if nearby else ""
+        contexts.append(
+            f"<li><code>{html.escape(str(context['content_id']))}{position_text}</code> "
+            f"{html.escape(str(context['message']))}{nearby_html}</li>"
+        )
+    return (
+        f"<li><strong>{html.escape(str(scene['draft_description']))}</strong>"
+        f"<br><small>{scene['evidence_count']} 条证据 / {scene['distinct_content_count']} 个内容 · "
+        f"{html.escape(str(scene['confidence']))} · 待审</small><ul>{''.join(contexts)}</ul></li>"
+    )

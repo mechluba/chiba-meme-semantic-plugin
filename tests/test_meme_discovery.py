@@ -59,8 +59,38 @@ def test_miner_only_creates_pending_review_signal() -> None:
                 "circle": "游戏",
                 "content": " 无 量 空 处！" if index == 1 else "无量空处",
                 "observed_at": "2026-08-26T00:00:00Z",
+                "message_id": f"m{index}",
+                "context": {"progress_seconds": 10.0 + index},
             }
         )
+    evidence.extend(
+        [
+            {
+                "evidence_id": "context-1",
+                "platform": "bilibili",
+                "source_kind": "danmaku",
+                "content_id": "BV1:1",
+                "content_title": "测试视频一",
+                "circle": "游戏",
+                "content": "信息一下子太多了",
+                "observed_at": "2026-08-26T00:00:00Z",
+                "message_id": "context-m1",
+                "context": {"progress_seconds": 10.5},
+            },
+            {
+                "evidence_id": "context-2",
+                "platform": "bilibili",
+                "source_kind": "danmaku",
+                "content_id": "BV2:2",
+                "content_title": "测试视频二",
+                "circle": "游戏",
+                "content": "完全看懵了",
+                "observed_at": "2026-08-26T00:00:00Z",
+                "message_id": "context-m2",
+                "context": {"progress_seconds": 13.5},
+            },
+        ]
+    )
     candidates = mine_candidates(
         evidence,
         {"min_occurrences": 3, "min_cross_content_occurrences": 2, "min_distinct_contents": 2},
@@ -72,6 +102,16 @@ def test_miner_only_creates_pending_review_signal() -> None:
     assert candidates[0]["candidate_kind"] == "surface_repetition_signal"
     assert candidates[0]["draft_card"]["semantic_core"] is None
     assert candidates[0]["signals"]["distinct_content_count"] == 2
+    assert candidates[0]["draft_card"]["usage_scenarios"]
+    scene = candidates[0]["observed_usage_scenarios"][0]
+    assert scene["review"]["status"] == "pending"
+    assert scene["confidence"] == "observed_cross_content"
+    assert scene["distinct_content_count"] == 2
+    assert any(
+        nearby["message"] == "信息一下子太多了"
+        for context in scene["representative_contexts"]
+        for nearby in context["nearby_messages"]
+    )
 
 
 def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Path, monkeypatch) -> None:
@@ -114,9 +154,13 @@ def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Pa
     review = json.loads(Path(result["pending_review_file"]).read_text(encoding="utf-8"))
     evidence_text = (Path(result["run_dir"]) / "evidence.jsonl").read_text(encoding="utf-8")
     assert result["candidate_count"] == 1
+    assert result["usage_scene_count"] == 1
     assert result["new_evidence_count"] == 3
     assert result["rolling_evidence_count"] == 3
     assert review["review_policy"]["auto_publish"] is False
+    assert review["usage_scene_policy"]["auto_semantic_confirmation"] is False
+    assert review["candidates"][0]["draft_card"]["usage_scenarios"]
+    assert review["candidates"][0]["observed_usage_scenarios"][0]["source_kind"] == "authorized_live_export"
     assert "不应保存" not in evidence_text
     assert "secret-user-id" not in evidence_text
 

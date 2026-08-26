@@ -70,6 +70,10 @@
     "min_occurrences": 3,
     "min_cross_content_occurrences": 2,
     "min_distinct_contents": 2,
-    "max_examples_per_candidate": 8
+    "max_examples_per_candidate": 8,
+    "max_usage_scenarios": 3,
+    "max_scene_contexts": 3,
+    "context_window_seconds": 6,
+    "max_nearby_messages": 6
   }
 }

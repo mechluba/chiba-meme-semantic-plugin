@@ -33,7 +33,9 @@ runs/<UTC 时间>/
   review-queue.html
 ```
 
-`source-report.json` 会区分真实拿到文本、仅房间元数据和错误，不把降级误报成采集成功。消息 ID 生成幂等键，同一条弹幕不会在后续运行中重复写入；候选从默认 14 天的 `evidence-store.jsonl` 滚动窗口生成，过期证据会从这个本地滚动仓移除。每条证据会写入 `retention_deadline` 和来源政策备注。`candidates.pending-review.json` 的重复信号只用于排队；普通高频话、房间仪式或刷屏噪声仍需人工拒绝。
+`source-report.json` 会区分真实拿到文本、仅房间元数据和错误，不把降级误报成采集成功。消息 ID 生成幂等键，同一条弹幕不会在后续运行中重复写入；候选从默认 14 天的 `evidence-store.jsonl` 滚动窗口生成，过期证据会从这个本地滚动仓移除。每条证据会写入 `retention_deadline` 和来源政策备注。
+
+每个候选还会生成 `observed_usage_scenarios`：按圈层与弹幕、评论或授权直播来源聚合，统计证据数和独立内容数，并展示代表性来源。弹幕场景会附带默认前后 6 秒内的邻近弹幕，帮助审核人判断它是在什么画面节点、以什么交流动作出现。`draft_card.usage_scenarios` 会同步写入可读场景草稿，但状态仍是 `pending`；程序不会从标题或邻近文本自动断言准确梗义。普通高频话、房间仪式或刷屏噪声仍需人工拒绝。
 
 ## 接入授权直播导出
 
