@@ -157,6 +157,7 @@ def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Pa
     result = pipeline.run_discovery(config, repo_root=tmp_path)
 
     review = json.loads(Path(result["pending_review_file"]).read_text(encoding="utf-8"))
+    review_html = Path(result["review_page"]).read_text(encoding="utf-8")
     evidence_text = (Path(result["run_dir"]) / "evidence.jsonl").read_text(encoding="utf-8")
     assert result["candidate_count"] == 1
     assert result["occurrence_context_count"] == 1
@@ -170,6 +171,9 @@ def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Pa
     assert review["candidates"][0]["occurrence_contexts"][0]["source_kind"] == "authorized_live_export"
     assert "不应保存" not in evidence_text
     assert "secret-user-id" not in evidence_text
+    assert "出现语境证据" not in review_html
+    assert "重复表达样本" not in review_html
+    assert "普通表达 / 证据不足（1）" in review_html
 
     second = pipeline.run_discovery(config, repo_root=tmp_path)
     assert second["new_evidence_count"] == 0
@@ -253,9 +257,12 @@ def test_semantic_enricher_builds_specific_communicative_intent(tmp_path: Path) 
             "candidates": enriched,
         }
     )
-    assert "交流意图与使用路线（模型草稿，待人审）" in rendered
+    assert "meme_candidate" in rendered
+    assert "<b>意图：</b>" in rendered
     assert "轻松地请求对方暂停或简化说明" in rendered
-    assert "出现语境证据（不是使用场景）" in rendered
+    assert "出现语境证据（不是使用场景）" not in rendered
+    assert "重复表达样本" not in rendered
+    assert "信息一下子太多了" not in rendered
 
 
 def test_semantic_enricher_rejects_vague_intent(tmp_path: Path) -> None:

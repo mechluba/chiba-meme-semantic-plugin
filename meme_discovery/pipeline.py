@@ -441,53 +441,82 @@ def _evidence_datetime(item: dict[str, Any]) -> datetime:
 
 
 def _render_review_html(document: dict[str, Any]) -> str:
-    rows: list[str] = []
-    for candidate in document["candidates"]:
-        examples = "".join(
-            f"<li><code>{html.escape(str(item['content_id']))}</code> {html.escape(str(item['message']))}</li>"
-            for item in candidate["examples"]
-        )
-        occurrence_contexts = "".join(_render_occurrence_context_html(scope) for scope in candidate["occurrence_contexts"])
+    primary_rows: list[str] = []
+    compact_rows: list[str] = []
+    candidates = sorted(document["candidates"], key=_review_priority)
+    for candidate in candidates:
         semantic = _render_semantic_draft_html(candidate)
         signals = candidate["signals"]
-        rows.append(
-            "<article>"
+        draft = candidate.get("draft_card") or {}
+        enrichment = candidate.get("semantic_enrichment") or {}
+        classification = str(draft.get("classification") or enrichment.get("status") or "pending")
+        card_class = "meme" if classification == "meme_candidate" else "compact"
+        if enrichment.get("status") == "error":
+            card_class = "error"
+        row = (
+            f"<article class=\"{card_class}\" data-candidate-id=\""
+            f"{html.escape(str(candidate['candidate_id']))}\">"
             f"<h2>{html.escape(candidate['phrase'])}</h2>"
-            f"<p>待审 · {html.escape(candidate['why_queued'])} · {signals['message_count']} 条 / "
-            f"{signals['distinct_content_count']} 个内容</p>"
-            f"{semantic}<h3>出现语境证据（不是使用场景）</h3><ol>{occurrence_contexts}</ol>"
-            f"<h3>重复表达样本</h3><ul>{examples}</ul>"
-            f"<p><small>{html.escape(candidate['candidate_id'])}</small></p>"
+            f"<span class=\"meta\">{signals['message_count']} 条 · "
+            f"{signals['distinct_content_count']} 个内容 · 待审</span>"
+            f"{semantic}"
             "</article>"
         )
-    body = "".join(rows) or "<p>本次没有达到阈值的候选。</p>"
+        (compact_rows if card_class == "compact" else primary_rows).append(row)
+    compact_group = (
+        f"<details class=\"compact-group\"><summary>普通表达 / 证据不足（{len(compact_rows)}）</summary>"
+        f"{''.join(compact_rows)}</details>"
+        if compact_rows
+        else ""
+    )
+    body = "".join(primary_rows) + compact_group or "<p>本次没有达到阈值的候选。</p>"
+    summary = document["summary"]
+    meme_count = summary.get("meme_candidate_count", 0)
+    route_count = summary.get("usage_route_count", 0)
     return f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>热梗候选人工审核</title><style>
-body{{font:16px/1.6 system-ui,sans-serif;max-width:920px;margin:40px auto;padding:0 20px;color:#202124}}
-header{{border-bottom:1px solid #ddd;margin-bottom:24px}}article{{border:1px solid #ddd;border-radius:12px;padding:8px 20px;margin:16px 0}}
-code{{color:#666}}small{{color:#777}}.warning{{background:#fff4d6;border-left:4px solid #d99b00;padding:10px}}
-.intent{{background:#eef7ff;border-left:4px solid #2484c6;padding:10px}}
+body{{font:14px/1.45 system-ui,sans-serif;max-width:1120px;margin:20px auto;padding:0 16px;color:#202124;background:#fafafa}}
+header{{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid #ddd;margin-bottom:12px}}
+header h1{{font-size:24px;margin:0 0 8px}}header p{{color:#666;margin:0 0 8px}}
+article{{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin:8px 0}}
+article.meme{{border-left:4px solid #2484c6}}article.error{{border-left:4px solid #d99b00}}
+h2{{display:inline;font-size:18px;margin:0}}h3{{font-size:15px;margin:8px 0 4px}}h4{{margin:6px 0 2px}}
+p{{margin:5px 0}}ol,ul{{margin:5px 0;padding-left:22px}}details{{margin:5px 0}}
+.meta{{color:#777;margin-left:10px;font-size:12px}}.badge{{display:inline-block;border-radius:999px;padding:1px 7px;background:#eee;font-size:12px}}
+.badge.meme_candidate{{background:#dceeff;color:#075b96}}.badge.ordinary_expression{{background:#eee;color:#555}}
+.badge.insufficient_evidence{{background:#fff0cf;color:#805600}}
+.decision{{display:flex;gap:8px;align-items:baseline}}.reason{{color:#444}}
+.semantic-core{{color:#333}}.route-list{{margin-top:6px}}
+.intent{{background:#f3f8fc;border-left:3px solid #2484c6;padding:7px 10px;margin:6px 0}}
+.intent b{{color:#333}}.policy{{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:6px}}
+.policy p{{margin:0}}small{{color:#777}}.warning{{background:#fff4d6;padding:7px 10px;margin-top:6px}}
+.compact-group{{margin:12px 0;border-top:1px solid #ddd;padding-top:10px}}
+.compact-group>summary{{font-weight:650;cursor:pointer;color:#444}}
+.compact-group article{{padding:7px 11px;margin:5px 0}}.compact-group .decision{{margin-bottom:0}}
+@media(max-width:720px){{header{{display:block}}.policy{{grid-template-columns:1fr}}}}
 </style></head><body><header><h1>热梗候选人工审核</h1>
-<p>运行 {html.escape(document['run_id'])}；滚动窗口共 {document['summary']['rolling_evidence_count']} 条证据，
-{document['summary']['candidate_count']} 个候选。所有候选均为 pending，不会自动发布。</p></header>{body}</body></html>"""
+<p>{summary['candidate_count']} 候选 · {meme_count} 梗 · {route_count} 路线 · 全部待审</p></header>{body}</body></html>"""
 
 
-def _render_occurrence_context_html(scene: dict[str, Any]) -> str:
-    contexts: list[str] = []
-    for context in scene["representative_contexts"]:
-        position = context.get("position_seconds")
-        position_text = f" · {position:.1f}s" if isinstance(position, (int, float)) else ""
-        nearby = " / ".join(str(item["message"]) for item in context.get("nearby_messages", []))
-        nearby_html = f"<br><small>前后文：{html.escape(nearby)}</small>" if nearby else ""
-        contexts.append(
-            f"<li><code>{html.escape(str(context['content_id']))}{position_text}</code> "
-            f"{html.escape(str(context['message']))}{nearby_html}</li>"
-        )
+def _review_priority(candidate: dict[str, Any]) -> tuple[int, int, int, str]:
+    draft = candidate.get("draft_card") or {}
+    enrichment = candidate.get("semantic_enrichment") or {}
+    classification = str(draft.get("classification") or "")
+    if classification == "meme_candidate":
+        rank = 0
+    elif enrichment.get("status") == "error":
+        rank = 1
+    elif classification == "insufficient_evidence":
+        rank = 2
+    else:
+        rank = 3
+    signals = candidate.get("signals") or {}
     return (
-        f"<li><strong>{html.escape(str(scene['scope_description']))}</strong>"
-        f"<br><small>{scene['evidence_count']} 条证据 / {scene['distinct_content_count']} 个内容 · "
-        f"{html.escape(str(scene['confidence']))} · 待审</small><ul>{''.join(contexts)}</ul></li>"
+        rank,
+        -int(signals.get("distinct_content_count") or 0),
+        -int(signals.get("message_count") or 0),
+        str(candidate.get("phrase") or ""),
     )
 
 
@@ -496,9 +525,16 @@ def _render_semantic_draft_html(candidate: dict[str, Any]) -> str:
     draft = candidate.get("draft_card") or {}
     if enrichment.get("status") != "pending_human_review":
         reason = enrichment.get("reason") or enrichment.get("error") or "未产生合法语义草稿"
+        return f"<p class=\"warning\">不可用于千叶决策：{html.escape(str(reason))}。</p>"
+    classification = str(draft.get("classification") or "unknown")
+    classification_html = html.escape(classification)
+    reason = html.escape(str(draft.get("classification_reason") or ""))
+    semantic_core = html.escape(str(draft.get("semantic_core") or ""))
+    if classification != "meme_candidate":
+        core = f"<span class=\"semantic-core\"> · {semantic_core}</span>" if semantic_core else ""
         return (
-            "<h3>交流意图与使用路线</h3>"
-            f"<p class=\"warning\">不可用于千叶决策：{html.escape(str(reason))}。</p>"
+            f"<p class=\"decision\"><span class=\"badge {classification_html}\">{classification_html}</span>"
+            f"<span class=\"reason\">{reason}{core}</span></p>"
         )
     routes = "".join(_render_usage_route_html(route) for route in draft.get("usage_routes", []))
     required = "、".join(html.escape(str(item)) for item in draft.get("required_context_signals", []))
@@ -513,12 +549,12 @@ def _render_semantic_draft_html(candidate: dict[str, Any]) -> str:
         for item in draft.get("negative_contexts", [])
     )
     return (
-        "<h3>交流意图与使用路线（模型草稿，待人审）</h3>"
-        f"<p><strong>分类：</strong>{html.escape(str(draft.get('classification')))} · "
-        f"{html.escape(str(draft.get('classification_reason')))}</p>"
-        f"<p><strong>语义核心：</strong>{html.escape(str(draft.get('semantic_core') or '无'))}</p>"
-        f"<ol>{routes}</ol><p><strong>全局必需信号：</strong>{required or '无'}</p>"
-        f"<p><strong>硬禁用：</strong>{blocks or '无'}</p>"
+        f"<p class=\"decision\"><span class=\"badge meme_candidate\">meme_candidate</span>"
+        f"<span class=\"reason\">{reason}</span></p>"
+        f"<p class=\"semantic-core\"><strong>语义：</strong>{semantic_core or '无'}</p>"
+        f"<ol class=\"route-list\">{routes}</ol><div class=\"policy\">"
+        f"<p><strong>全局信号：</strong>{required or '无'}</p>"
+        f"<p><strong>禁用：</strong>{blocks or '无'}</p></div>"
         f"<details><summary>正反例</summary><h4>正例</h4><ul>{positives}</ul><h4>负例</h4><ul>{negatives}</ul></details>"
     )
 
@@ -540,10 +576,10 @@ def _render_usage_route_html(route: dict[str, Any]) -> str:
     )
     return (
         f"<li class=\"intent\"><strong>{html.escape(str(route['route_tag']))}</strong>"
-        f"<br><b>何时：</b>{html.escape(str(route['when']))}"
-        f"<br><b>交流意图：</b>{html.escape(str(route['communicative_intent']))}"
-        f"<br><b>回应作用：</b>{html.escape(str(route['response_function']))}"
-        f"<br><b>必需信号：</b>{signals or '无'}"
-        f"<br><b>受众要求：</b>{audience or '无'}"
+        f"<br><b>触发：</b>{html.escape(str(route['when']))}"
+        f"<br><b>意图：</b>{html.escape(str(route['communicative_intent']))}"
+        f"<br><b>作用：</b>{html.escape(str(route['response_function']))}"
+        f"<br><b>信号：</b>{signals or '无'}"
+        f"<br><b>受众：</b>{audience or '无'}"
         f"<br><small>置信度 {route['confidence']}</small>{calibration_html}</li>"
     )
