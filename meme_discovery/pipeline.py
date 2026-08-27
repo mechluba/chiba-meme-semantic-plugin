@@ -19,6 +19,7 @@ from .bilibili import (
     fetch_danmaku_segment,
     fetch_pagelist,
     fetch_popular_videos,
+    fetch_recommended_videos,
     segment_count,
 )
 from .miner import mine_candidates
@@ -84,6 +85,11 @@ def collect_bilibili(config: dict[str, Any], client: RateLimitedHttpClient) -> t
             videos.extend(fetch_popular_videos(client, source_config.get("popular") or {}))
         except SourceError as exc:
             errors.append({"stage": "popular", "error": str(exc)})
+    if (source_config.get("recommended") or {}).get("enabled", False):
+        try:
+            videos.extend(fetch_recommended_videos(client, source_config.get("recommended") or {}))
+        except SourceError as exc:
+            errors.append({"stage": "recommended", "error": str(exc)})
     for seed in source_config.get("seed_videos", []):
         if not isinstance(seed, dict) or not seed.get("bvid"):
             continue
@@ -109,6 +115,8 @@ def collect_bilibili(config: dict[str, Any], client: RateLimitedHttpClient) -> t
         report: dict[str, Any] = {
             "bvid": bvid,
             "title": video["title"],
+            "discovery_source": video.get("discovery_source"),
+            "circle": video.get("circle"),
             "status": "ok",
             "counts": {"danmaku": 0, "comments": 0, "parts": 0, "evidence": 0},
             "errors": [],
@@ -139,7 +147,11 @@ def collect_bilibili(config: dict[str, Any], client: RateLimitedHttpClient) -> t
                                 message_id=item.message_id,
                                 content=item.content,
                                 observed_at=_iso(item.ctime),
-                                context={"progress_seconds": item.progress_seconds, "part": page.get("page")},
+                                context={
+                                    "progress_seconds": item.progress_seconds,
+                                    "part": page.get("page"),
+                                    "discovery_source": video.get("discovery_source"),
+                                },
                             )
                         )
                         collected_for_video += 1
@@ -167,6 +179,7 @@ def collect_bilibili(config: dict[str, Any], client: RateLimitedHttpClient) -> t
                         message_id=item["message_id"],
                         content=item["content"],
                         observed_at=_iso(item.get("observed_unix")),
+                        context={"discovery_source": video.get("discovery_source")},
                     )
                 )
             report["counts"]["comments"] = len(comments)

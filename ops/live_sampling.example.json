@@ -5,7 +5,7 @@
   "sampling": {
     "duration_seconds": 45,
     "max_messages_per_room": 200,
-    "max_rooms_per_run": 2,
+    "max_rooms_per_run": 4,
     "startup_timeout_seconds": 20
   },
   "rooms": [
@@ -37,6 +37,27 @@
       "label": "DANK1NG",
       "circle": "CS2/游戏",
       "url": "https://www.huya.com/10188"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "35",
+      "label": "CSGO官方赛事",
+      "circle": "CS2/游戏赛事",
+      "url": "https://live.bilibili.com/35"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "6",
+      "label": "哔哩哔哩英雄联盟赛事",
+      "circle": "LOL/游戏赛事",
+      "url": "https://live.bilibili.com/6"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "13",
+      "label": "哔哩哔哩刀塔2赛事",
+      "circle": "DOTA2/游戏赛事",
+      "url": "https://live.bilibili.com/13"
     }
   ]
 }

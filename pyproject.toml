@@ -4,6 +4,7 @@ version = "1.0.2"
 description = "Chiba 审核后语义梗库 Planner/Replyer 插件"
 requires-python = ">=3.11"
 dependencies = [
+    "Brotli>=1.1,<2.0",
     "maibot-sdk>=2.5.4,<3.0.0",
     "numpy>=2.2.6",
     "websockets>=16.0,<17.0",

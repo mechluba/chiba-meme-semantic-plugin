@@ -6,9 +6,14 @@ import json
 import numpy as np
 import pytest
 
-from meme_discovery.bilibili import parse_danmaku_reply
+from meme_discovery.bilibili import fetch_recommended_videos, parse_danmaku_reply
 from meme_discovery.chiba_model_config import public_model_metadata, resolve_chiba_task
-from meme_discovery.live_sampler import decode_douyu_packets, douyu_record_to_message
+from meme_discovery.live_sampler import (
+    bilibili_event_to_message,
+    decode_bilibili_packets,
+    decode_douyu_packets,
+    douyu_record_to_message,
+)
 from meme_discovery.miner import mine_candidates, normalize_expression
 from meme_discovery.semantic_calibrator import calibrate_candidates
 from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
@@ -43,6 +48,87 @@ def test_douyu_live_parser_keeps_message_but_drops_identity_fields() -> None:
     assert "user_id" not in message
     assert "secret-user" not in json.dumps(message, ensure_ascii=False)
     assert "不应保存" not in json.dumps(message, ensure_ascii=False)
+
+
+def _bilibili_live_packet(event: dict, *, version: int = 0) -> bytes:
+    import brotli
+    import struct
+
+    body = json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    inner = struct.pack(">IHHII", len(body) + 16, 16, 0, 5, 1) + body
+    if version != 3:
+        return inner
+    compressed = brotli.compress(inner)
+    return struct.pack(">IHHII", len(compressed) + 16, 16, 3, 5, 1) + compressed
+
+
+def test_bilibili_live_parser_keeps_danmaku_but_drops_identity_fields() -> None:
+    collected_at = pipeline._utc_now()
+    timestamp_ms = int(collected_at.timestamp() * 1000)
+    event = {
+        "cmd": "DANMU_MSG:4:0:2:2:2:0",
+        "info": [
+            [0, 0, 0, 0, timestamp_ms],
+            "这下真无量空处了",
+            [123456, "不应保存的昵称"],
+            [],
+            {},
+            "",
+            0,
+            0,
+            0,
+            json.dumps({"id_str": "bili-live-1", "user_hash": "不应保存"}),
+        ],
+    }
+    decoded = decode_bilibili_packets(_bilibili_live_packet(event, version=3))
+    message = bilibili_event_to_message(
+        {"room_id": "13", "label": "哔哩哔哩刀塔2赛事", "circle": "DOTA2/游戏赛事"},
+        decoded[0],
+        collected_at=collected_at,
+    )
+
+    assert message is not None
+    assert message["platform"] == "bilibili"
+    assert message["source_kind"] == "public_live_sample"
+    assert message["message_id"] == "bili-live-1"
+    assert message["content"] == "这下真无量空处了"
+    assert "123456" not in json.dumps(message, ensure_ascii=False)
+    assert "不应保存" not in json.dumps(message, ensure_ascii=False)
+
+
+def test_bilibili_recommended_feed_only_keeps_public_video_metadata() -> None:
+    class FakeClient:
+        def get_json(self, url: str) -> dict:
+            assert "feed/rcmd" in url
+            return {
+                "code": 0,
+                "data": {
+                    "item": [
+                        {
+                            "goto": "av",
+                            "bvid": "BV1REC",
+                            "id": 101,
+                            "title": "推荐视频",
+                            "owner": {"name": "公开作者", "mid": 987654},
+                        },
+                        {"goto": "ad", "bvid": "BV1AD", "id": 102, "title": "广告"},
+                    ]
+                },
+            }
+
+    videos = fetch_recommended_videos(FakeClient(), {"max_videos": 3, "circle": "B站匿名推荐"})
+
+    assert videos == [
+        {
+            "bvid": "BV1REC",
+            "aid": 101,
+            "title": "推荐视频",
+            "creator": "公开作者",
+            "circle": "B站匿名推荐",
+            "discovery_source": "bilibili_recommended",
+        }
+    ]
+    assert "987654" not in json.dumps(videos, ensure_ascii=False)
 
 
 def _varint(value: int) -> bytes:

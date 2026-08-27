@@ -14,6 +14,7 @@ import urllib.request
 
 
 POPULAR_URL = "https://api.bilibili.com/x/web-interface/popular"
+RECOMMENDED_URL = "https://api.bilibili.com/x/web-interface/index/top/feed/rcmd"
 PAGELIST_URL = "https://api.bilibili.com/x/player/pagelist"
 REPLY_URL = "https://api.bilibili.com/x/v2/reply/main"
 DANMAKU_URL = "https://api.bilibili.com/x/v2/dm/web/seg.so"
@@ -126,6 +127,46 @@ def fetch_popular_videos(client: RateLimitedHttpClient, config: dict[str, Any]) 
                 }
             )
             if len(result) >= int(config.get("max_videos", 8)):
+                return result
+    return result
+
+
+def fetch_recommended_videos(client: RateLimitedHttpClient, config: dict[str, Any]) -> list[dict[str, Any]]:
+    """抓取匿名首页推荐流中的普通视频；推荐结果随时间变化，不假定个性化身份。"""
+    result: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    max_videos = max(0, int(config.get("max_videos", 8)))
+    for page in range(1, max(1, int(config.get("pages", 1))) + 1):
+        payload = client.get_json(
+            _url(
+                RECOMMENDED_URL,
+                fresh_type=3,
+                ps=min(max(1, int(config.get("page_size", 12))), 30),
+                fresh_idx=page,
+                fresh_idx_1h=page,
+                feed_version="V8",
+                homepage_ver=1,
+            )
+        )
+        items = ((payload.get("data") or {}).get("item") or [])
+        for item in items:
+            if not isinstance(item, dict) or str(item.get("goto") or "") != "av":
+                continue
+            bvid = str(item.get("bvid") or "").strip()
+            if not bvid or bvid in seen:
+                continue
+            seen.add(bvid)
+            result.append(
+                {
+                    "bvid": bvid,
+                    "aid": int(item.get("id") or 0),
+                    "title": str(item.get("title") or "").strip(),
+                    "creator": str((item.get("owner") or {}).get("name") or "").strip(),
+                    "circle": str(config.get("circle") or "B站匿名推荐"),
+                    "discovery_source": "bilibili_recommended",
+                }
+            )
+            if len(result) >= max_videos:
                 return result
     return result
 

@@ -53,6 +53,13 @@
           "娱乐"
         ]
       },
+      "recommended": {
+        "enabled": true,
+        "pages": 2,
+        "page_size": 12,
+        "max_videos": 8,
+        "circle": "B站匿名推荐"
+      },
       "seed_videos": [],
       "max_parts_per_video": 1,
       "max_segments_per_part": 2,
