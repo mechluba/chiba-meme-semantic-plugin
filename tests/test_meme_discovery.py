@@ -8,10 +8,41 @@ import pytest
 
 from meme_discovery.bilibili import parse_danmaku_reply
 from meme_discovery.chiba_model_config import public_model_metadata, resolve_chiba_task
+from meme_discovery.live_sampler import decode_douyu_packets, douyu_record_to_message
 from meme_discovery.miner import mine_candidates, normalize_expression
 from meme_discovery.semantic_calibrator import calibrate_candidates
 from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
 from meme_discovery import pipeline
+
+
+def _douyu_packet(text: str) -> bytes:
+    import struct
+
+    body = text.encode("utf-8") + b"\x00"
+    length = len(body) + 8
+    return struct.pack("<IIHBB", length, length, 690, 0, 0) + body
+
+
+def test_douyu_live_parser_keeps_message_but_drops_identity_fields() -> None:
+    packet = _douyu_packet(
+        "type@=chatmsg/rid@=6979222/uid@=secret-user/nn@=不应保存/"
+        "txt@=这波@S直接@A无量空处/cid@=chat-1/cst@=1787817600000/"
+    )
+    records = decode_douyu_packets(packet)
+    message = douyu_record_to_message(
+        {"room_id": "6657", "label": "玩机器", "circle": "CS2/游戏"},
+        records[0],
+        collected_at=pipeline._utc_now(),
+    )
+
+    assert message is not None
+    assert message["content"] == "这波/直接@用户"
+    assert message["message_id"] == "chat-1"
+    assert message["room_id"] == "6657"
+    assert "nickname" not in message
+    assert "user_id" not in message
+    assert "secret-user" not in json.dumps(message, ensure_ascii=False)
+    assert "不应保存" not in json.dumps(message, ensure_ascii=False)
 
 
 def _varint(value: int) -> bytes:

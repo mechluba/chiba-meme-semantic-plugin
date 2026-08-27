@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "maibot-sdk>=2.5.4,<3.0.0",
     "numpy>=2.2.6",
+    "websockets>=16.0,<17.0",
 ]
 
 [tool.pytest.ini_options]

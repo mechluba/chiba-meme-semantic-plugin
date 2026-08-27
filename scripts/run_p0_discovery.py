@@ -39,9 +39,16 @@ def main() -> int:
         default=REPO_ROOT / "ops" / "p0_discovery.example.json",
         help="本地 JSON 配置；默认使用仓库中的低频安全示例配置",
     )
+    parser.add_argument(
+        "--collection-only",
+        action="store_true",
+        help="只采集、聚合并生成表层待审信号；显式标记语义未运行，不调用在线模型",
+    )
     args = parser.parse_args()
     config_path = args.config.expanduser().resolve()
     config = _load_config(config_path)
+    if args.collection_only:
+        config["semantic_enrichment"] = {"enabled": False, "required": False}
     output_root = Path(os.path.expandvars(str(config.get("output_root") or "out/p0-meme-discovery")))
     if not output_root.is_absolute():
         output_root = REPO_ROOT / output_root

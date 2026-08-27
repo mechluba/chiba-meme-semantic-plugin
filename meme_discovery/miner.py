@@ -217,6 +217,11 @@ def _scope_description(phrase: str, circle: str, source_kind: str) -> str:
             f"“{phrase}”在{circle}直播间授权导出中重复出现；"
             "这里只记录同场证据，具体交流动作必须经过语义提炼和人工审核。"
         )
+    if source_kind == "public_live_sample":
+        return (
+            f"“{phrase}”在{circle}公开直播间短时抽样中重复出现；"
+            "这里只记录同场证据，具体交流动作必须经过语义提炼和人工审核。"
+        )
     return f"在{circle}相关内容的 {source_kind} 语料中观察到“{phrase}”重复使用；尚未判断交流意图。"
 
 

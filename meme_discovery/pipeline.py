@@ -240,12 +240,16 @@ def collect_jsonl_inbox(config: dict[str, Any], repo_root: Path) -> tuple[list[d
                 room_id = str(item["room_id"]).strip()
                 message_id = str(item["message_id"]).strip()
                 content = str(item["content"]).strip()
+                default_source_kind = "public_live_sample" if path.name.startswith("live-") else "authorized_live_export"
+                source_kind = str(item.get("source_kind") or default_source_kind).strip()
+                if source_kind not in {"authorized_live_export", "public_live_sample"}:
+                    raise ValueError(f"不支持的直播 inbox source_kind: {source_kind}")
                 if not all((platform, room_id, message_id, content)):
                     raise ValueError("必填字段为空")
                 evidence.append(
                     _make_evidence(
                         platform=platform,
-                        source_kind="authorized_live_export",
+                        source_kind=source_kind,
                         source_id=f"{platform}:{room_id}",
                         content_id=str(item.get("session_id") or f"{platform}:{room_id}:{path.stem}"),
                         content_title=str(item.get("room_title") or ""),
@@ -319,6 +323,8 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
         item["policy_note"] = (
             "本地授权导出；授权范围与原始文件保留由数据提供方负责。"
             if item.get("source_kind") == "authorized_live_export"
+            else "公开 Web 客户端短时匿名抽样；不作为稳定 Open API 或批量再分发授权。"
+            if item.get("source_kind") == "public_live_sample"
             else "公开 Web 端小流量研究入口；不作为稳定 Open API 或批量再分发授权。"
         )
     candidates = mine_candidates(rolling_evidence, config.get("mining") or {})

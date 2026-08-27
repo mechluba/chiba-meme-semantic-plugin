@@ -23,7 +23,7 @@
     "minimum_interval_seconds": 0.5,
     "response_format_json": true,
     "validation_repair_attempts": 1,
-    "max_candidates_per_run": 0,
+    "max_candidates_per_run": 40,
     "max_occurrence_scopes": 3,
     "max_contexts_per_scope": 3,
     "embedding_calibration": {
@@ -40,9 +40,9 @@
     "bilibili": {
       "popular": {
         "enabled": true,
-        "pages": 1,
+        "pages": 2,
         "page_size": 20,
-        "max_videos": 6,
+        "max_videos": 12,
         "allowed_categories": [
           "游戏",
           "单机游戏",
@@ -57,7 +57,7 @@
       "max_parts_per_video": 1,
       "max_segments_per_part": 2,
       "max_danmaku_per_video": 1500,
-      "max_comments_per_video": 20
+      "max_comments_per_video": 30
     },
     "room_anchors": [
       {

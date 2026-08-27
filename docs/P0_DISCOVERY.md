@@ -7,11 +7,29 @@
 | 来源 | 当前能力 | 说明 |
 | --- | --- | --- |
 | B 站热门视频 | 热门列表、首批公开评论、有限分段弹幕 | 使用公开 Web 端接口，低频、有上限；接口并非稳定 Open API，失效时必须显式报错或停用 |
-| 斗鱼 6657 / 9999 / 71415 | 房间页面可达性 | 没有正式弹幕授权时不连接私有协议，不生成聊天证据 |
-| 虎牙 10188 | 房间页面可达性 | 没有正式弹幕授权时不连接私有协议，不生成聊天证据 |
+| 斗鱼 6657 / 9999 / 71415 | 公开直播页短时弹幕抽样 | 使用全新匿名 Chrome 会话加载官方公开直播页；6657 每轮必采，其余房间轮换，每房间默认最多 45 秒 / 200 条 |
+| 虎牙 10188 | 官方弹幕接口状态监测 | 官方接口需要 appId 与签名密钥；缺少 `HUYA_OPEN_APP_ID` / `HUYA_OPEN_SECRET` 时显式归档 `missing_credentials`，不绕过鉴权 |
 | 授权直播导出 | 本地 JSONL inbox | 供平台正式能力、主播授权工具或人工导出的弹幕进入同一流水线 |
 
-公开页面能访问不等于允许无限量抓取和长期保存。默认只保存消息文本、消息 ID、内容/房间 ID、观察时间和圈层；评论者/观众昵称、用户 ID、头像等个人字段不会进入标准化证据，正文中的显式 `@昵称` 会被替换为 `@用户`。运行范围通过配置中的视频数、分段数、评论数和请求间隔限制。`out/` 不应同步到公共仓库，并应由运营方按实际授权设置短期保留和定期清理策略。
+公开页面能访问不等于允许无限量抓取和长期保存。默认只保存消息文本、消息 ID、内容/房间 ID、观察时间和圈层；评论者/观众昵称、用户 ID、头像、粉丝牌等个人字段不会进入标准化证据，正文中的显式 `@昵称` 会被替换为 `@用户`。直播抽样不登录、不发送消息、不保存原始 WebSocket 帧或页面档案。运行范围通过配置中的视频数、分段数、评论数、直播间数、采样时长和消息上限限制。`out/` 不应同步到公共仓库，并应由运营方按实际授权设置短期保留和定期清理策略。
+
+## 直播间短时抽样
+
+```bash
+python3 scripts/sample_live_rooms.py --config ops/live_sampling.example.json
+```
+
+每次最多并行抽样两个房间。玩机器 6657 设置为每轮必采，9999、71415 和 10188 按两小时周期轮换，因此不会为了覆盖房间而持续监听。每次运行都会生成：
+
+```text
+latest-live-sampling.json
+live-archive/<日期>/<UTC 时间>/
+  messages.jsonl          # 匿名化后的本轮消息
+  sampling-report.json    # 每个房间的成功、无消息、缺凭据或错误状态
+inbox/live-<UTC 时间>.jsonl
+```
+
+`inbox/` 副本会在下一次发现任务中被标准化为 `public_live_sample` 证据，并与人工或平台授权导出的 `authorized_live_export` 明确区分。抽样报告中的 `chat_collected=true` 只在实际保存了消息时出现；房间离线、页面协议变化、缺凭据和轮换跳过均不会被记成成功。
 
 ## 运行一次
 
@@ -22,6 +40,8 @@ export MEME_DISCOVERY_LLM_MODEL='your-semantic-model'
 export MEME_DISCOVERY_LLM_API_KEY='从本地密钥管理器注入，不写进配置文件'
 python3 scripts/run_p0_discovery.py --config ops/p0_discovery.local.json
 ```
+
+如果采集机没有合法注入模型密钥，可显式使用 `--collection-only`。它仍会抓取、去重、滚动保留并生成表层重复信号，但所有候选都标记为语义未运行，不能拿给千叶做使用决策；后续必须在持有受控模型凭据的环境用 `scripts/enrich_pending_candidates.py` 补齐交流意图。
 
 输出在被 Git 忽略的 `out/p0-meme-discovery/`：
 
@@ -73,7 +93,7 @@ runs/<UTC 时间>/
 
 ## 定时运行
 
-仓库提供通用的 `ops/cron/p0-meme-discovery.crontab.example`，以及 macOS 的 `ops/launchd/com.chiba.meme-discovery.plist.example`。把仓库和 Python 3.11+ 解释器替换为绝对路径后再安装。脚本使用非阻塞文件锁，前一次尚未结束时会跳过新一次运行。示例不会自动安装，避免未经确认修改本机定时任务。
+仓库提供通用的 `ops/cron/p0-meme-discovery.crontab.example`，以及 macOS 的 `ops/launchd/com.chiba.meme-live-sampling.plist.example`、`ops/launchd/com.chiba.meme-discovery.plist.example`。默认节奏是每两小时 07 分短时抽样、每天 04:20 汇总洗梗。把仓库和 Python 3.11+ 解释器替换为绝对路径后再安装。两个脚本各自使用非阻塞文件锁，前一次尚未结束时会跳过新一次运行。
 
 ## 人工审核后的下一步
 

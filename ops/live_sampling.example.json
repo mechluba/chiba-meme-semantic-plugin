@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "output_root": "out/p0-meme-discovery",
+  "chrome_path": "",
+  "sampling": {
+    "duration_seconds": 45,
+    "max_messages_per_room": 200,
+    "max_rooms_per_run": 2,
+    "startup_timeout_seconds": 20
+  },
+  "rooms": [
+    {
+      "platform": "douyu",
+      "room_id": "6657",
+      "label": "玩机器",
+      "circle": "CS2/游戏",
+      "url": "https://www.douyu.com/6657",
+      "always_sample": true
+    },
+    {
+      "platform": "douyu",
+      "room_id": "9999",
+      "label": "YYF",
+      "circle": "DOTA2/游戏",
+      "url": "https://www.douyu.com/9999"
+    },
+    {
+      "platform": "douyu",
+      "room_id": "71415",
+      "label": "寅子",
+      "circle": "主机游戏/娱乐",
+      "url": "https://www.douyu.com/71415"
+    },
+    {
+      "platform": "huya",
+      "room_id": "10188",
+      "label": "DANK1NG",
+      "circle": "CS2/游戏",
+      "url": "https://www.huya.com/10188"
+    }
+  ]
+}

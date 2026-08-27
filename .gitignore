@@ -7,3 +7,4 @@ config.toml
 runtime-fingerprint-*.json
 out/
 ops/p0_discovery.local.json
+ops/live_sampling.local.json

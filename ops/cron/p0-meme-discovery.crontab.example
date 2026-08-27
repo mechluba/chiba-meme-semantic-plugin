@@ -1,3 +1,5 @@
-# 每天按本机时区 04:20 跑一次。将下面两个绝对路径替换为本机实际路径后，再用 crontab -e 安装。
+# 直播间每两小时短时抽样；每天 04:20 汇总近 14 天证据、洗出候选并生成待审文件。
+# 将下面绝对路径替换为本机实际路径后，再用 crontab -e 安装。
 # 不要把 Cookie、Token 或其他密钥写进 crontab；授权来源应通过本地受限配置或导出 inbox 提供。
+7 */2 * * * cd /ABSOLUTE/PATH/chiba-meme-semantic-plugin && /ABSOLUTE/PATH/python3 scripts/sample_live_rooms.py --config /ABSOLUTE/PATH/chiba-meme-semantic-plugin/ops/live_sampling.example.json >> out/p0-meme-discovery/live-scheduler.log 2>&1
 20 4 * * * cd /ABSOLUTE/PATH/chiba-meme-semantic-plugin && /ABSOLUTE/PATH/python3 scripts/run_p0_discovery.py --config /ABSOLUTE/PATH/chiba-meme-semantic-plugin/ops/p0_discovery.local.json >> out/p0-meme-discovery/scheduler.log 2>&1
