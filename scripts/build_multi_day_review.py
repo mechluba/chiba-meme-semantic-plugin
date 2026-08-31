@@ -485,7 +485,7 @@ button,select,input{{font:inherit}} button,.btn{{border:1px solid #cfd1ca;backgr
 button:hover{{border-color:#999}} button.primary{{background:var(--brand);border-color:var(--brand);color:#fff}}
 .notice{{display:flex;gap:14px;align-items:center;padding:9px 12px;margin-bottom:10px;border:1px solid #e4c77d;background:#fff7df;border-radius:7px}}
 .notice strong{{white-space:nowrap;color:#714900}} .metrics{{display:grid;grid-template-columns:repeat(8,minmax(100px,1fr));gap:7px;margin-bottom:10px}}
-.storage-warning{{border-color:#e8b5a8;background:#fff0eb}} .metric{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px}} .metric b{{display:block;font-size:19px;line-height:1.15}} .metric span{{color:var(--muted);font-size:11px}}
+.storage-warning{{border-color:#e8b5a8;background:#fff0eb}}
 .metric{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px}} .metric b{{display:block;font-size:19px;line-height:1.15}} .metric span{{color:var(--muted);font-size:11px}}
 .source-grid{{display:grid;grid-template-columns:1fr 1.35fr;gap:9px;margin-bottom:10px}} .panel{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:9px 11px;min-width:0}}
 .panel h2{{font-size:14px;margin:0 0 6px}} table{{width:100%;border-collapse:collapse}} th,td{{text-align:left;border-top:1px solid #ecece8;padding:4px 6px;white-space:nowrap}} th{{font-size:11px;color:var(--muted);font-weight:600}} td.num{{text-align:right;font-variant-numeric:tabular-nums}}
