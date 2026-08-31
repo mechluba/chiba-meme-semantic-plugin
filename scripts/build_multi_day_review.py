@@ -483,6 +483,7 @@ def _render_html(document: dict[str, Any]) -> str:
 h1{{font-size:23px;margin:0 0 3px}} .sub,.muted{{color:var(--muted)}} .header-actions{{display:flex;gap:7px;flex-wrap:wrap}}
 button,select,input{{font:inherit}} button,.btn{{border:1px solid #cfd1ca;background:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--ink)}}
 button:hover{{border-color:#999}} button.primary{{background:var(--brand);border-color:var(--brand);color:#fff}}
+.btn input{{display:none}}
 .notice{{display:flex;gap:14px;align-items:center;padding:9px 12px;margin-bottom:10px;border:1px solid #e4c77d;background:#fff7df;border-radius:7px}}
 .notice strong{{white-space:nowrap;color:#714900}} .metrics{{display:grid;grid-template-columns:repeat(8,minmax(100px,1fr));gap:7px;margin-bottom:10px}}
 .storage-warning{{border-color:#e8b5a8;background:#fff0eb}}
@@ -503,7 +504,7 @@ article.high{{border-left-color:var(--high)}} article.low{{opacity:.82}} .phrase
 @media(max-width:600px){{.page{{padding:12px}}.metrics{{grid-template-columns:repeat(2,1fr)}}header{{display:block}}.header-actions{{margin-top:8px}}}}
 </style></head><body><div class="page">
 <header><div><h1>{html.escape(title)}</h1><div class="sub">单文件离线版，候选数据已内嵌 · 按 Asia/Shanghai 的 collected_at 汇总 · 不展示语境证据与重复样本</div></div>
-<div class="header-actions"><button id="export" class="primary">导出审核结果 JSON</button><button id="clear">清空本页决定</button></div></header>
+<div class="header-actions"><label class="btn">导入审核结果 JSON<input id="import" type="file" accept="application/json,.json"></label><button id="export" class="primary">导出审核结果 JSON</button><button id="clear">清空本页决定</button></div></header>
 <div class="notice"><strong>语义模型未运行</strong><span>本页只用于判断哪些表达值得进入下一轮语义提炼。交流意图、常见使用场景、必需信号与禁用条件均未生成，不能直接接入千叶。</span></div>
 <div class="notice storage-warning hidden" id="storage-warning"><strong>浏览器未开放本地存储</strong><span>候选数据仍可正常查看，当前审核决定只在本次打开期间保留；关闭页面前请导出 JSON。</span></div>
 <section class="metrics" id="metrics"></section>
@@ -589,11 +590,23 @@ function exportDecisions(){{
  const payload={{schema_version:1,report_kind:'p0_meme_discovery_triage_decisions',date_range:REPORT.date_range,exported_at:new Date().toISOString(),semantic_status:'not_run',decisions:Object.entries(decisions).map(([candidate_id,value])=>{{const c=REPORT.candidates.find(x=>x.candidate_id===candidate_id);return {{candidate_id,phrase:c?.phrase||'',...value}}}})}};
  const blob=new Blob([JSON.stringify(payload,null,2)+'\\n'],{{type:'application/json'}});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meme-review-decisions-${{REPORT.date_range.start}}-${{REPORT.date_range.end}}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }}
+async function importDecisions(file){{
+ if(!file)return;
+ try{{
+  const payload=JSON.parse(await file.text());
+  if(payload.report_kind!=='p0_meme_discovery_triage_decisions'||!Array.isArray(payload.decisions))throw new Error('请选择由本页“导出审核结果 JSON”生成的文件');
+  if(payload.date_range?.start!==REPORT.date_range.start||payload.date_range?.end!==REPORT.date_range.end)throw new Error(`审核结果日期范围不匹配：需要 ${{REPORT.date_range.start}}～${{REPORT.date_range.end}}`);
+  const allowed=new Set(['refine','understand','reject']);let imported=0;
+  for(const item of payload.decisions){{if(!item?.candidate_id||!allowed.has(item.decision))continue;decisions[item.candidate_id]={{decision:item.decision,updated_at:item.updated_at||new Date().toISOString()}};imported++;}}
+  saveDecisions();renderCandidates();alert(`已导入 ${{imported}} 条审核决定。`);
+ }}catch(error){{alert(`导入失败：${{error.message||error}}`)}}
+}}
 document.getElementById('filters').innerHTML=filterDefs.map(([k,v])=>`<button data-filter="${{k}}">${{v}}</button>`).join('');
 document.querySelectorAll('#filters button').forEach(btn=>btn.addEventListener('click',()=>{{state.filter=btn.dataset.filter;renderCandidates()}}));
 document.getElementById('search').addEventListener('input',e=>{{state.query=e.target.value.trim();renderCandidates()}});
 document.getElementById('sort').addEventListener('change',e=>{{state.sort=e.target.value;renderCandidates()}});
 document.getElementById('export').addEventListener('click',exportDecisions);
+document.getElementById('import').addEventListener('change',async e=>{{await importDecisions(e.target.files?.[0]);e.target.value=''}});
 document.getElementById('clear').addEventListener('click',()=>{{if(confirm('清空这份页面中已经保存的全部审核决定？')){{decisions={{}};clearSavedDecisions();renderCandidates()}}}});
 showStorageStatus();renderSummary();renderCandidates();
 </script></body></html>"""
