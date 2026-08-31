@@ -485,6 +485,7 @@ button,select,input{{font:inherit}} button,.btn{{border:1px solid #cfd1ca;backgr
 button:hover{{border-color:#999}} button.primary{{background:var(--brand);border-color:var(--brand);color:#fff}}
 .notice{{display:flex;gap:14px;align-items:center;padding:9px 12px;margin-bottom:10px;border:1px solid #e4c77d;background:#fff7df;border-radius:7px}}
 .notice strong{{white-space:nowrap;color:#714900}} .metrics{{display:grid;grid-template-columns:repeat(8,minmax(100px,1fr));gap:7px;margin-bottom:10px}}
+.storage-warning{{border-color:#e8b5a8;background:#fff0eb}} .metric{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px}} .metric b{{display:block;font-size:19px;line-height:1.15}} .metric span{{color:var(--muted);font-size:11px}}
 .metric{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px}} .metric b{{display:block;font-size:19px;line-height:1.15}} .metric span{{color:var(--muted);font-size:11px}}
 .source-grid{{display:grid;grid-template-columns:1fr 1.35fr;gap:9px;margin-bottom:10px}} .panel{{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:9px 11px;min-width:0}}
 .panel h2{{font-size:14px;margin:0 0 6px}} table{{width:100%;border-collapse:collapse}} th,td{{text-align:left;border-top:1px solid #ecece8;padding:4px 6px;white-space:nowrap}} th{{font-size:11px;color:var(--muted);font-weight:600}} td.num{{text-align:right;font-variant-numeric:tabular-nums}}
@@ -501,19 +502,34 @@ article.high{{border-left-color:var(--high)}} article.low{{opacity:.82}} .phrase
 @media(max-width:1050px){{.metrics{{grid-template-columns:repeat(4,1fr)}}.source-grid{{grid-template-columns:1fr}} article{{grid-template-columns:1fr}}.decisions{{justify-content:flex-start}}}}
 @media(max-width:600px){{.page{{padding:12px}}.metrics{{grid-template-columns:repeat(2,1fr)}}header{{display:block}}.header-actions{{margin-top:8px}}}}
 </style></head><body><div class="page">
-<header><div><h1>{html.escape(title)}</h1><div class="sub">按 Asia/Shanghai 的 collected_at 汇总 · 只保留聚合指标，不展示语境证据与重复样本</div></div>
+<header><div><h1>{html.escape(title)}</h1><div class="sub">单文件离线版，候选数据已内嵌 · 按 Asia/Shanghai 的 collected_at 汇总 · 不展示语境证据与重复样本</div></div>
 <div class="header-actions"><button id="export" class="primary">导出审核结果 JSON</button><button id="clear">清空本页决定</button></div></header>
 <div class="notice"><strong>语义模型未运行</strong><span>本页只用于判断哪些表达值得进入下一轮语义提炼。交流意图、常见使用场景、必需信号与禁用条件均未生成，不能直接接入千叶。</span></div>
+<div class="notice storage-warning hidden" id="storage-warning"><strong>浏览器未开放本地存储</strong><span>候选数据仍可正常查看，当前审核决定只在本次打开期间保留；关闭页面前请导出 JSON。</span></div>
 <section class="metrics" id="metrics"></section>
 <section class="source-grid"><div class="panel"><h2>每日去重证据 / 直播归档</h2><table><thead><tr><th>日期</th><th class="num">去重证据</th><th class="num">直播轮次</th><th class="num">原始弹幕</th></tr></thead><tbody id="days"></tbody></table></div>
 <div class="panel"><h2>直播间覆盖</h2><table><thead><tr><th>平台 / 直播间</th><th class="num">抽中</th><th class="num">消息</th><th>状态</th></tr></thead><tbody id="rooms"></tbody></table></div></section>
 <details class="panel"><summary><strong>采集运行与来源明细</strong> <span class="muted">（{summary['discovery_run_count']} 次发现运行，点击展开）</span></summary><div id="runs"></div></details>
 <div class="toolbar"><div class="toolbar-row"><input id="search" type="search" placeholder="搜索候选、别名、领域或直播间…"><div class="filters" id="filters"></div><select id="sort"><option value="priority">优先级</option><option value="messages">出现次数</option><option value="contents">内容/场次</option><option value="recent">最近出现</option></select><span class="progress" id="progress"></span></div></div>
-<main class="candidate-list" id="candidates"></main><div class="footnote">审核决定只保存在当前浏览器的 localStorage；导出 JSON 后再进入语义提炼流程。页面未内嵌原始弹幕、出现语境或重复表达样本。</div>
+<main class="candidate-list" id="candidates"></main><div class="footnote">浏览器允许时，审核决定会保存在 localStorage；否则仅在本次打开期间保留。请导出 JSON 后再进入语义提炼流程。页面未内嵌原始弹幕、出现语境或重复表达样本。</div>
 </div><script id="report-data" type="application/json">{data}</script><script>
 const REPORT=JSON.parse(document.getElementById('report-data').textContent);
 const STORAGE_KEY=`chiba-meme-review:${{REPORT.date_range.start}}:${{REPORT.date_range.end}}`;
-let decisions=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{{}}');
+let storageAvailable=true;
+function readDecisions(){{
+ try{{return JSON.parse(window.localStorage.getItem(STORAGE_KEY)||'{{}}')}}
+ catch(error){{storageAvailable=false;return {{}}}}
+}}
+function showStorageStatus(){{document.getElementById('storage-warning').classList.toggle('hidden',storageAvailable)}}
+function saveDecisions(){{
+ try{{window.localStorage.setItem(STORAGE_KEY,JSON.stringify(decisions))}}
+ catch(error){{storageAvailable=false;showStorageStatus()}}
+}}
+function clearSavedDecisions(){{
+ try{{window.localStorage.removeItem(STORAGE_KEY)}}
+ catch(error){{storageAvailable=false;showStorageStatus()}}
+}}
+let decisions=readDecisions();
 let state={{filter:'all',query:'',sort:'priority'}};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]));
 const fmt=n=>Number(n||0).toLocaleString('zh-CN');
@@ -568,7 +584,7 @@ function renderCandidates(){{
  document.getElementById('progress').textContent=`显示 ${{fmt(rows.length)}} / ${{fmt(REPORT.candidates.length)}} · 已处理 ${{fmt(done)}}`;
  document.querySelectorAll('#filters button').forEach(btn=>btn.classList.toggle('active',btn.dataset.filter===state.filter));
 }}
-function setDecision(id,decision){{if(decisions[id]?.decision===decision)delete decisions[id];else decisions[id]={{decision,updated_at:new Date().toISOString()}};localStorage.setItem(STORAGE_KEY,JSON.stringify(decisions));renderCandidates();}}
+function setDecision(id,decision){{if(decisions[id]?.decision===decision)delete decisions[id];else decisions[id]={{decision,updated_at:new Date().toISOString()}};saveDecisions();renderCandidates();}}
 function exportDecisions(){{
  const payload={{schema_version:1,report_kind:'p0_meme_discovery_triage_decisions',date_range:REPORT.date_range,exported_at:new Date().toISOString(),semantic_status:'not_run',decisions:Object.entries(decisions).map(([candidate_id,value])=>{{const c=REPORT.candidates.find(x=>x.candidate_id===candidate_id);return {{candidate_id,phrase:c?.phrase||'',...value}}}})}};
  const blob=new Blob([JSON.stringify(payload,null,2)+'\\n'],{{type:'application/json'}});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meme-review-decisions-${{REPORT.date_range.start}}-${{REPORT.date_range.end}}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
@@ -578,8 +594,8 @@ document.querySelectorAll('#filters button').forEach(btn=>btn.addEventListener('
 document.getElementById('search').addEventListener('input',e=>{{state.query=e.target.value.trim();renderCandidates()}});
 document.getElementById('sort').addEventListener('change',e=>{{state.sort=e.target.value;renderCandidates()}});
 document.getElementById('export').addEventListener('click',exportDecisions);
-document.getElementById('clear').addEventListener('click',()=>{{if(confirm('清空这份页面中已经保存的全部审核决定？')){{decisions={{}};localStorage.removeItem(STORAGE_KEY);renderCandidates()}}}});
-renderSummary();renderCandidates();
+document.getElementById('clear').addEventListener('click',()=>{{if(confirm('清空这份页面中已经保存的全部审核决定？')){{decisions={{}};clearSavedDecisions();renderCandidates()}}}});
+showStorageStatus();renderSummary();renderCandidates();
 </script></body></html>"""
 
 
