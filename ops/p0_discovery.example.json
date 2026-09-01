@@ -2,6 +2,34 @@
   "schema_version": 1,
   "output_root": "out/p0-meme-discovery",
   "evidence_retention_days": 14,
+  "pre_review_filter": {
+    "enabled": true,
+    "exact_expressions": [
+      "@用户",
+      "请输入文本",
+      "合成大西瓜",
+      "魔法骑士",
+      "保卫鱼娘",
+      "空屏",
+      "空瓶",
+      "占领空屏",
+      "占领空瓶",
+      "承包空屏",
+      "未识别到人脸",
+      "触发关键词"
+    ],
+    "contains": [
+      "钻粉五周年限时回馈",
+      "查看活动＞"
+    ],
+    "regex_patterns": [
+      "^\\d+\\s*(?:秒|分钟|小时|天)前[!！…。]*$",
+      "^(?:第?\\d+个看完|\\d+\\s*分钟[!！…。]*|0\\s*分钟[!！…。]*）)$",
+      "^@用户(?:\\s+@用户)*$",
+      "^我选择【.+】为本场【背锅位】$",
+      "^\\[[^\\]]+\\](?:\\[[^\\]]+\\])*$"
+    ]
+  },
   "request": {
     "user_agent": "Mozilla/5.0",
     "timeout_seconds": 20,
@@ -48,9 +76,18 @@
           "单机游戏",
           "电子竞技",
           "手机游戏",
+          "动画",
+          "番剧",
+          "国创",
+          "影视",
+          "知识",
+          "科学科普",
+          "人工智能",
           "科技",
           "数码",
-          "娱乐"
+          "资讯",
+          "娱乐",
+          "虚拟UP主"
         ]
       },
       "recommended": {
@@ -59,6 +96,33 @@
         "page_size": 12,
         "max_videos": 8,
         "circle": "B站匿名推荐"
+      },
+      "creator_watchlist": {
+        "enabled": true,
+        "max_creators_per_run": 4,
+        "max_videos_per_creator": 1,
+        "max_age_days": 14,
+        "creators": [
+          {"name": "泛式", "mid": "63231", "circle": "泛二次元"},
+          {"name": "逍遥散人", "mid": "168598", "circle": "泛二次元/游戏"},
+          {"name": "老番茄", "mid": "546195", "circle": "游戏/娱乐"},
+          {"name": "某幻君", "mid": "1577804", "circle": "游戏/娱乐"},
+          {"name": "中国BOY超级大猩猩", "mid": "562197", "circle": "游戏/娱乐"},
+          {"name": "影视飓风", "mid": "946974", "circle": "数码娱乐/影像科技"},
+          {"name": "老师好我叫何同学", "mid": "163637592", "circle": "数码娱乐/科技创意"},
+          {"name": "极客湾Geekerwan", "mid": "25876945", "circle": "数码/硬件科技"},
+          {"name": "笔吧评测室", "mid": "367877", "circle": "数码/电脑硬件"},
+          {"name": "钟文泽", "mid": "25910292", "circle": "数码/消费电子"},
+          {"name": "科技美学", "mid": "3766866", "circle": "科技资讯/消费电子"},
+          {"name": "差评君", "mid": "19319172", "circle": "科技资讯/互联网"},
+          {"name": "量子位", "mid": "673779175", "circle": "科技资讯/AI"},
+          {"name": "阿萨Aza", "mid": "480680646", "circle": "虚拟主播"},
+          {"name": "七海Nana7mi", "mid": "434334701", "circle": "虚拟主播"},
+          {"name": "嘉然今天吃什么", "mid": "672328094", "circle": "虚拟主播/A-SOUL"},
+          {"name": "乃琳Queen", "mid": "672342685", "circle": "虚拟主播/A-SOUL"},
+          {"name": "向晚大魔王", "mid": "672346917", "circle": "虚拟主播/A-SOUL"},
+          {"name": "贝拉kira", "mid": "672353429", "circle": "虚拟主播/A-SOUL"}
+        ]
       },
       "seed_videos": [],
       "max_parts_per_video": 1,

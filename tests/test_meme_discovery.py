@@ -6,13 +6,24 @@ import json
 import numpy as np
 import pytest
 
-from meme_discovery.bilibili import fetch_recommended_videos, parse_danmaku_reply
+from meme_discovery.bilibili import (
+    fetch_creator_watchlist_videos,
+    fetch_recommended_videos,
+    parse_danmaku_reply,
+)
 from meme_discovery.chiba_model_config import public_model_metadata, resolve_chiba_task
+from meme_discovery.evidence_filter import filter_review_evidence
 from meme_discovery.live_sampler import (
+    _select_rooms,
     bilibili_event_to_message,
     decode_bilibili_packets,
     decode_douyu_packets,
     douyu_record_to_message,
+)
+from meme_discovery.lifecycle import (
+    select_inventory_decay_review,
+    select_rejected_for_rereview,
+    time_decay_weight,
 )
 from meme_discovery.miner import mine_candidates, normalize_expression
 from meme_discovery.semantic_calibrator import calibrate_candidates
@@ -96,6 +107,50 @@ def test_bilibili_live_parser_keeps_danmaku_but_drops_identity_fields() -> None:
     assert "不应保存" not in json.dumps(message, ensure_ascii=False)
 
 
+def test_live_room_rotation_prefers_current_schedule_and_circle_coverage() -> None:
+    from datetime import datetime, timezone
+
+    rooms = [
+        {
+            "platform": "douyu",
+            "room_id": "game-a",
+            "sampling_bucket": "游戏",
+            "preferred_local_hours": [20],
+        },
+        {
+            "platform": "douyu",
+            "room_id": "game-b",
+            "sampling_bucket": "游戏",
+            "preferred_local_hours": [20],
+        },
+        {
+            "platform": "bilibili",
+            "room_id": "anime",
+            "sampling_bucket": "泛二次元",
+            "preferred_local_hours": [20],
+        },
+        {
+            "platform": "bilibili",
+            "room_id": "virtual",
+            "sampling_bucket": "虚拟主播",
+            "preferred_local_hours": [20],
+        },
+        {
+            "platform": "bilibili",
+            "room_id": "daytime-tech",
+            "sampling_bucket": "科技",
+            "preferred_local_hours": [10],
+        },
+    ]
+    run_at = datetime(2026, 9, 1, 12, 0, tzinfo=timezone.utc)  # 上海 20:00
+
+    selected, skipped = _select_rooms(rooms, max_rooms=3, run_at=run_at)
+
+    assert len(selected) == 3
+    assert {room["sampling_bucket"] for room in selected} == {"游戏", "泛二次元", "虚拟主播"}
+    assert any(room["room_id"] == "daytime-tech" for room in skipped)
+
+
 def test_bilibili_recommended_feed_only_keeps_public_video_metadata() -> None:
     class FakeClient:
         def get_json(self, url: str) -> dict:
@@ -129,6 +184,56 @@ def test_bilibili_recommended_feed_only_keeps_public_video_metadata() -> None:
         }
     ]
     assert "987654" not in json.dumps(videos, ensure_ascii=False)
+
+
+def test_creator_watchlist_only_keeps_exact_mid_and_recent_videos() -> None:
+    class FakeClient:
+        def get_json(self, url: str) -> dict:
+            assert "search/type" in url
+            return {
+                "code": 0,
+                "data": {
+                    "result": [
+                        {
+                            "mid": 63231,
+                            "bvid": "BV1FANSHI",
+                            "aid": 101,
+                            "title": "<em class=\"keyword\">泛式</em>聊新番",
+                            "pubdate": 1_800_000_000,
+                        },
+                        {
+                            "mid": 999,
+                            "bvid": "BV1OTHER",
+                            "aid": 102,
+                            "title": "同名混入",
+                            "pubdate": 1_800_000_000,
+                        },
+                    ]
+                },
+            }
+
+    videos, errors = fetch_creator_watchlist_videos(
+        FakeClient(),
+        {
+            "rotation_index": 0,
+            "max_creators_per_run": 1,
+            "max_videos_per_creator": 1,
+            "max_age_days": 3650,
+            "creators": [{"name": "泛式", "mid": "63231", "circle": "泛二次元"}],
+        },
+    )
+
+    assert errors == []
+    assert videos == [
+        {
+            "bvid": "BV1FANSHI",
+            "aid": 101,
+            "title": "泛式聊新番",
+            "creator": "泛式",
+            "circle": "泛二次元",
+            "discovery_source": "bilibili_creator_watchlist",
+        }
+    ]
 
 
 def _varint(value: int) -> bytes:
@@ -234,6 +339,82 @@ def test_miner_only_creates_pending_review_signal() -> None:
         for context in scene["representative_contexts"]
         for nearby in context["nearby_messages"]
     )
+
+
+def test_pre_review_filter_excludes_blacklist_without_mutating_archive_rows() -> None:
+    evidence = [
+        {"evidence_id": "e1", "content": "@用户"},
+        {"evidence_id": "e2", "content": "3分钟前"},
+        {"evidence_id": "e3", "content": "合成大西瓜"},
+        {"evidence_id": "e4", "content": "无量空处"},
+    ]
+
+    eligible, report = filter_review_evidence(
+        evidence,
+        {"enabled": True, "exact_expressions": ["合成大西瓜"]},
+    )
+
+    assert [item["evidence_id"] for item in eligible] == ["e4"]
+    assert report["excluded_count"] == 3
+    assert report["excluded_by_reason"] == {"regex_blacklist": 2, "exact_blacklist": 1}
+    assert report["raw_archive_preserved"] is True
+    assert len(evidence) == 4
+
+
+def test_lifecycle_decay_only_proposes_human_review() -> None:
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    weight = time_decay_weight(
+        "2026-07-18T00:00:00Z",
+        now=now,
+        half_life_days=30,
+    )
+    queue = select_inventory_decay_review(
+        [
+            {
+                "card_id": "old-card",
+                "canonical_expression": "旧梗",
+                "age_class": "current_observed",
+                "lifecycle": {"weight": 1.0},
+            }
+        ],
+        {"old-card": {"last_observed_at": "2026-07-18T00:00:00Z", "observed_30d_count": 0}},
+        {"default_half_life_days": 30, "review_below_weight": 0.5, "minimum_age_days": 21},
+        now=now,
+    )
+
+    assert weight < 0.5
+    assert queue[0]["review_actions"] == ["KEEP", "DOWNRANK", "RETIRE"]
+    assert queue[0]["auto_apply"] is False
+
+
+def test_rejected_rereview_respects_cooldown_and_seed() -> None:
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    rejected = [
+        {"candidate_id": "eligible-a", "rejected_at": "2026-07-01T00:00:00Z"},
+        {"candidate_id": "eligible-b", "rejected_at": "2026-07-02T00:00:00Z"},
+        {"candidate_id": "cooling", "rejected_at": "2026-08-20T00:00:00Z"},
+    ]
+
+    first = select_rejected_for_rereview(
+        rejected,
+        {"cooldown_days": 30, "sample_size": 2},
+        now=now,
+        seed="weekly-queue",
+    )
+    second = select_rejected_for_rereview(
+        rejected,
+        {"cooldown_days": 30, "sample_size": 2},
+        now=now,
+        seed="weekly-queue",
+    )
+
+    assert first == second
+    assert {item["candidate_id"] for item in first} == {"eligible-a", "eligible-b"}
+    assert all(item["auto_apply"] is False for item in first)
 
 
 def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Path, monkeypatch) -> None:

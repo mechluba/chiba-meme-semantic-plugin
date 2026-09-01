@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator
 
+import html
 import json
 import math
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -15,6 +18,7 @@ import urllib.request
 
 POPULAR_URL = "https://api.bilibili.com/x/web-interface/popular"
 RECOMMENDED_URL = "https://api.bilibili.com/x/web-interface/index/top/feed/rcmd"
+SEARCH_URL = "https://api.bilibili.com/x/web-interface/search/type"
 PAGELIST_URL = "https://api.bilibili.com/x/player/pagelist"
 REPLY_URL = "https://api.bilibili.com/x/v2/reply/main"
 DANMAKU_URL = "https://api.bilibili.com/x/v2/dm/web/seg.so"
@@ -169,6 +173,63 @@ def fetch_recommended_videos(client: RateLimitedHttpClient, config: dict[str, An
             if len(result) >= max_videos:
                 return result
     return result
+
+
+def fetch_creator_watchlist_videos(
+    client: RateLimitedHttpClient,
+    config: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """轮换查询少量重点 UP 的近期投稿；严格校验 mid，避免同名搜索结果混入。"""
+    creators = [item for item in config.get("creators") or [] if isinstance(item, dict) and item.get("mid")]
+    if not creators:
+        return [], []
+    max_creators = max(1, min(int(config.get("max_creators_per_run", 4)), len(creators)))
+    rotation_index = int(config.get("rotation_index", datetime.now(timezone.utc).date().toordinal())) % len(creators)
+    selected = (creators + creators)[rotation_index : rotation_index + max_creators]
+    max_videos_per_creator = max(1, int(config.get("max_videos_per_creator", 1)))
+    max_age_days = max(1, int(config.get("max_age_days", 14)))
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    result: list[dict[str, Any]] = []
+    errors: list[dict[str, str]] = []
+    for creator in selected:
+        mid = str(creator.get("mid") or "").strip()
+        name = str(creator.get("name") or mid).strip()
+        try:
+            payload = client.get_json(
+                _url(
+                    SEARCH_URL,
+                    search_type="video",
+                    keyword=name,
+                    order="pubdate",
+                    page=1,
+                    page_size=min(20, max(8, max_videos_per_creator * 4)),
+                )
+            )
+            matched = 0
+            for item in (payload.get("data") or {}).get("result") or []:
+                if not isinstance(item, dict) or str(item.get("mid") or "") != mid:
+                    continue
+                bvid = str(item.get("bvid") or "").strip()
+                published = datetime.fromtimestamp(int(item.get("pubdate") or 0), timezone.utc)
+                if not bvid or published < cutoff:
+                    continue
+                raw_title = re.sub(r"<[^>]+>", "", str(item.get("title") or ""))
+                result.append(
+                    {
+                        "bvid": bvid,
+                        "aid": int(item.get("aid") or 0),
+                        "title": html.unescape(raw_title).strip(),
+                        "creator": name,
+                        "circle": str(creator.get("circle") or "重点UP主"),
+                        "discovery_source": "bilibili_creator_watchlist",
+                    }
+                )
+                matched += 1
+                if matched >= max_videos_per_creator:
+                    break
+        except (SourceError, ValueError, OSError) as exc:
+            errors.append({"creator": name, "mid": mid, "error": str(exc)})
+    return result, errors
 
 
 def fetch_pagelist(client: RateLimitedHttpClient, bvid: str) -> list[dict[str, Any]]:

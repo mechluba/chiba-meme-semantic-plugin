@@ -5,7 +5,7 @@
   "sampling": {
     "duration_seconds": 45,
     "max_messages_per_room": 200,
-    "max_rooms_per_run": 4,
+    "max_rooms_per_run": 6,
     "startup_timeout_seconds": 20
   },
   "rooms": [
@@ -15,49 +15,154 @@
       "label": "玩机器",
       "circle": "CS2/游戏",
       "url": "https://www.douyu.com/6657",
-      "always_sample": true
+      "sampling_bucket": "游戏",
+      "schedule_timezone": "Asia/Shanghai",
+      "preferred_local_hours": [0, 2, 4, 18, 20, 22],
+      "schedule_note": "2026-08-27～31 本地抽样高消息时段"
     },
     {
       "platform": "douyu",
       "room_id": "9999",
       "label": "YYF",
       "circle": "DOTA2/游戏",
-      "url": "https://www.douyu.com/9999"
+      "url": "https://www.douyu.com/9999",
+      "sampling_bucket": "游戏",
+      "schedule_timezone": "Asia/Shanghai",
+      "preferred_local_hours": [16, 18, 20],
+      "schedule_note": "2026-08-27～31 本地抽样高消息时段"
     },
     {
       "platform": "douyu",
       "room_id": "71415",
       "label": "寅子",
       "circle": "主机游戏/娱乐",
-      "url": "https://www.douyu.com/71415"
+      "url": "https://www.douyu.com/71415",
+      "sampling_bucket": "游戏娱乐",
+      "schedule_timezone": "Asia/Shanghai",
+      "preferred_local_hours": [18, 20, 22],
+      "schedule_note": "2026-08-27～31 本地抽样高消息时段"
     },
     {
       "platform": "huya",
       "room_id": "10188",
       "label": "DANK1NG",
       "circle": "CS2/游戏",
-      "url": "https://www.huya.com/10188"
+      "url": "https://www.huya.com/10188",
+      "sampling_bucket": "游戏",
+      "preferred_local_hours": [18, 20, 22]
     },
     {
       "platform": "bilibili",
       "room_id": "35",
       "label": "CSGO官方赛事",
       "circle": "CS2/游戏赛事",
-      "url": "https://live.bilibili.com/35"
+      "url": "https://live.bilibili.com/35",
+      "sampling_bucket": "游戏赛事",
+      "preferred_local_hours": [18, 20, 22]
     },
     {
       "platform": "bilibili",
       "room_id": "6",
       "label": "哔哩哔哩英雄联盟赛事",
       "circle": "LOL/游戏赛事",
-      "url": "https://live.bilibili.com/6"
+      "url": "https://live.bilibili.com/6",
+      "sampling_bucket": "游戏赛事",
+      "preferred_local_hours": [18, 20, 22]
     },
     {
       "platform": "bilibili",
       "room_id": "13",
       "label": "哔哩哔哩刀塔2赛事",
       "circle": "DOTA2/游戏赛事",
-      "url": "https://live.bilibili.com/13"
+      "url": "https://live.bilibili.com/13",
+      "sampling_bucket": "游戏赛事",
+      "preferred_local_hours": [18, 20, 22]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "33989",
+      "label": "泛式",
+      "circle": "泛二次元/动画",
+      "url": "https://live.bilibili.com/33989",
+      "sampling_bucket": "泛二次元",
+      "preferred_local_hours": [19, 20, 21, 22, 23, 0]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "1017",
+      "label": "逍遥散人",
+      "circle": "单机游戏/泛二次元",
+      "url": "https://live.bilibili.com/1017",
+      "sampling_bucket": "泛二次元",
+      "preferred_local_hours": [20, 21, 22, 23]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "544843",
+      "label": "极客湾Geekerwan",
+      "circle": "数码/科技",
+      "url": "https://live.bilibili.com/544843",
+      "sampling_bucket": "数码科技",
+      "schedule_timezone": "Asia/Shanghai",
+      "preferred_weekdays": [5],
+      "preferred_local_hours": [21, 22, 23],
+      "schedule_note": "公开主页标注每周六晚 9 点"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "21696950",
+      "label": "阿萨Aza",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/21696950",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [20, 21, 22, 23],
+      "schedule_note": "公开主页标注通常每晚 8 点"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "21452505",
+      "label": "七海Nana7mi",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/21452505",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [22, 23, 0, 1, 2],
+      "schedule_note": "近期公开回放以 22 点场为主，仍以动态预告为准"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "22637261",
+      "label": "嘉然今天吃什么",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/22637261",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [19, 20, 21, 22, 23]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "22625027",
+      "label": "乃琳Queen",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/22625027",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [19, 20, 21, 22, 23]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "22625025",
+      "label": "向晚大魔王",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/22625025",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [19, 20, 21, 22, 23]
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "22632424",
+      "label": "贝拉kira",
+      "circle": "虚拟主播/泛二次元",
+      "url": "https://live.bilibili.com/22632424",
+      "sampling_bucket": "虚拟主播",
+      "preferred_local_hours": [19, 20, 21, 22, 23]
     }
   ]
 }

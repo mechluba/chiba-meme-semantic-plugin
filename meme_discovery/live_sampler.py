@@ -20,6 +20,7 @@ import time
 import urllib.error
 import urllib.request
 import zlib
+from zoneinfo import ZoneInfo
 
 import brotli
 import websockets
@@ -462,7 +463,23 @@ async def sample_bilibili_room(
     return messages, report
 
 
-def _select_rooms(rooms: list[dict[str, Any]], *, max_rooms: int, run_at: datetime) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _preferred_now(room: dict[str, Any], run_at: datetime) -> bool:
+    timezone_name = str(room.get("schedule_timezone") or "Asia/Shanghai")
+    try:
+        local = run_at.astimezone(ZoneInfo(timezone_name))
+    except (KeyError, ValueError):
+        local = run_at.astimezone(timezone.utc)
+    weekdays = {int(value) for value in room.get("preferred_weekdays") or []}
+    hours = {int(value) for value in room.get("preferred_local_hours") or []}
+    return (not weekdays or local.weekday() in weekdays) and (not hours or local.hour in hours)
+
+
+def _select_rooms(
+    rooms: list[dict[str, Any]],
+    *,
+    max_rooms: int,
+    run_at: datetime,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     enabled = [room for room in rooms if room.get("enabled", True)]
     required = [room for room in enabled if room.get("always_sample")]
     rotating = [room for room in enabled if not room.get("always_sample")]
@@ -470,7 +487,24 @@ def _select_rooms(rooms: list[dict[str, Any]], *, max_rooms: int, run_at: dateti
     capacity = max(0, max_rooms - len(selected))
     if rotating and capacity:
         start = int(run_at.timestamp() // 7200) % len(rotating)
-        selected.extend((rotating + rotating)[start : start + capacity])
+        rotated = (rotating + rotating)[start : start + len(rotating)]
+        ranked = [room for room in rotated if _preferred_now(room, run_at)] + [
+            room for room in rotated if not _preferred_now(room, run_at)
+        ]
+        used_buckets = {str(room.get("sampling_bucket") or "") for room in selected}
+        for prefer_new_bucket in (True, False):
+            for room in ranked:
+                if room in selected:
+                    continue
+                bucket = str(room.get("sampling_bucket") or room.get("circle") or room.get("platform") or "other")
+                if prefer_new_bucket and bucket in used_buckets:
+                    continue
+                selected.append(room)
+                used_buckets.add(bucket)
+                if len(selected) >= max_rooms:
+                    break
+            if len(selected) >= max_rooms:
+                break
     selected_ids = {(str(item.get("platform")), str(item.get("room_id"))) for item in selected}
     skipped = [
         room

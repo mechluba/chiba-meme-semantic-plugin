@@ -16,12 +16,14 @@ from .bilibili import (
     RateLimitedHttpClient,
     SourceError,
     fetch_comments,
+    fetch_creator_watchlist_videos,
     fetch_danmaku_segment,
     fetch_pagelist,
     fetch_popular_videos,
     fetch_recommended_videos,
     segment_count,
 )
+from .evidence_filter import filter_review_evidence
 from .miner import mine_candidates
 from .semantic_calibrator import calibrate_candidates, preflight_semantic_calibration
 from .semantic_enricher import enrich_candidates, preflight_semantic_enrichment
@@ -90,6 +92,13 @@ def collect_bilibili(config: dict[str, Any], client: RateLimitedHttpClient) -> t
             videos.extend(fetch_recommended_videos(client, source_config.get("recommended") or {}))
         except SourceError as exc:
             errors.append({"stage": "recommended", "error": str(exc)})
+    if (source_config.get("creator_watchlist") or {}).get("enabled", False):
+        creator_videos, creator_errors = fetch_creator_watchlist_videos(
+            client,
+            source_config.get("creator_watchlist") or {},
+        )
+        videos.extend(creator_videos)
+        errors.extend({"stage": "creator_watchlist", **item} for item in creator_errors)
     for seed in source_config.get("seed_videos", []):
         if not isinstance(seed, dict) or not seed.get("bvid"):
             continue
@@ -340,7 +349,11 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             if item.get("source_kind") == "public_live_sample"
             else "公开 Web 端小流量研究入口；不作为稳定 Open API 或批量再分发授权。"
         )
-    candidates = mine_candidates(rolling_evidence, config.get("mining") or {})
+    review_evidence, evidence_filter_report = filter_review_evidence(
+        rolling_evidence,
+        config.get("pre_review_filter") or {},
+    )
+    candidates = mine_candidates(review_evidence, config.get("mining") or {})
     occurrence_context_count = sum(len(candidate["occurrence_contexts"]) for candidate in candidates)
     candidates, semantic_report = enrich_candidates(
         candidates,
@@ -371,12 +384,15 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             "fetched_evidence_count": len(fetched_evidence),
             "new_evidence_count": len(new_evidence),
             "rolling_evidence_count": len(rolling_evidence),
+            "review_eligible_evidence_count": len(review_evidence),
+            "pre_review_excluded_count": evidence_filter_report["excluded_count"],
             "evidence_retention_days": retention_days,
             "candidate_count": len(candidates),
             "occurrence_context_count": occurrence_context_count,
             "usage_route_count": usage_route_count,
         },
         "candidates": candidates,
+        "pre_review_filter_report": evidence_filter_report,
     }
     source_report = {
         "schema_version": 1,
