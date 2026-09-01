@@ -99,7 +99,7 @@
       },
       "creator_watchlist": {
         "enabled": true,
-        "max_creators_per_run": 4,
+        "max_creators_per_run": 6,
         "max_videos_per_creator": 1,
         "max_age_days": 14,
         "creators": [
@@ -121,7 +121,17 @@
           {"name": "嘉然今天吃什么", "mid": "672328094", "circle": "虚拟主播/A-SOUL"},
           {"name": "乃琳Queen", "mid": "672342685", "circle": "虚拟主播/A-SOUL"},
           {"name": "向晚大魔王", "mid": "672346917", "circle": "虚拟主播/A-SOUL"},
-          {"name": "贝拉kira", "mid": "672353429", "circle": "虚拟主播/A-SOUL"}
+          {"name": "贝拉kira", "mid": "672353429", "circle": "虚拟主播/A-SOUL"},
+          {"name": "凉风Kaze", "mid": "14110780", "circle": "二游/泛二次元社区"},
+          {"name": "棉花大哥哥", "mid": "1871001", "circle": "二游/游戏社区"},
+          {"name": "莴苣某人", "mid": "1773346", "circle": "二游/攻略社区"},
+          {"name": "原神", "mid": "401742377", "circle": "二游/原神"},
+          {"name": "崩坏星穹铁道", "mid": "1340190821", "circle": "二游/崩坏星穹铁道"},
+          {"name": "绝区零", "mid": "1636034895", "circle": "二游/绝区零"},
+          {"name": "鸣潮", "mid": "1955897084", "circle": "二游/鸣潮"},
+          {"name": "明日方舟", "mid": "161775300", "circle": "二游/明日方舟"},
+          {"name": "尘白禁区", "mid": "1409863611", "circle": "二游/尘白禁区"},
+          {"name": "战双帕弥什", "mid": "382651856", "circle": "二游/战双帕弥什"}
         ]
       },
       "seed_videos": [],

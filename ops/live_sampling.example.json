@@ -163,6 +163,156 @@
       "url": "https://live.bilibili.com/22632424",
       "sampling_bucket": "虚拟主播",
       "preferred_local_hours": [19, 20, 21, 22, 23]
+    },
+    {
+      "platform": "douyu",
+      "room_id": "252140",
+      "label": "Doinb",
+      "circle": "LOL/英雄联盟主播",
+      "url": "https://www.douyu.com/252140",
+      "sampling_bucket": "英雄联盟主播",
+      "preferred_local_hours": [19, 20, 21, 22, 23, 0, 1],
+      "schedule_note": "直播间当前仍活跃，晚间至凌晨探测；具体时间随训练和赛事变化"
+    },
+    {
+      "platform": "douyu",
+      "room_id": "96291",
+      "label": "东北大鹌鹑",
+      "circle": "LOL/英雄联盟主播",
+      "url": "https://www.douyu.com/96291",
+      "sampling_bucket": "英雄联盟主播",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "晚间优先探测；以实际开播状态为准"
+    },
+    {
+      "platform": "douyu",
+      "room_id": "1126960",
+      "label": "余小C",
+      "circle": "LOL/英雄联盟主播",
+      "url": "https://www.douyu.com/1126960",
+      "sampling_bucket": "英雄联盟主播",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "2026-09-01 晚间开播状态核验通过"
+    },
+    {
+      "platform": "douyu",
+      "room_id": "138243",
+      "label": "洞主",
+      "circle": "LOL/英雄联盟主播",
+      "url": "https://www.douyu.com/138243",
+      "sampling_bucket": "英雄联盟主播",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "2026-09-01 晚间开播状态核验通过"
+    },
+    {
+      "platform": "douyu",
+      "room_id": "6682963",
+      "label": "Ning",
+      "circle": "LOL/英雄联盟主播",
+      "url": "https://www.douyu.com/6682963",
+      "sampling_bucket": "英雄联盟主播",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "不定期开播，晚间事件探测"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "34348",
+      "label": "棉花大哥哥",
+      "circle": "二游/游戏社区",
+      "url": "https://live.bilibili.com/34348",
+      "sampling_bucket": "二游社区",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "2026-09-01 19:50 开播状态核验通过；内容不只限二游"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "1151716",
+      "label": "莴苣某人",
+      "circle": "二游/攻略社区",
+      "url": "https://live.bilibili.com/1151716",
+      "sampling_bucket": "二游社区",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "直播不固定；同时通过新投稿弹幕和评论覆盖"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "942101",
+      "label": "凉风Kaze",
+      "circle": "二游/泛二次元社区",
+      "url": "https://live.bilibili.com/942101",
+      "sampling_bucket": "二游社区",
+      "preferred_local_hours": [18, 19, 20, 21, 22, 23],
+      "schedule_note": "直播内容不固定；重点覆盖新投稿评论和弹幕"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "21987615",
+      "label": "原神官方",
+      "circle": "二游/原神",
+      "url": "https://live.bilibili.com/21987615",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本前瞻和特别节目事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "27263119",
+      "label": "崩坏星穹铁道官方",
+      "circle": "二游/崩坏星穹铁道",
+      "url": "https://live.bilibili.com/27263119",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本前瞻和特别节目事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "32805602",
+      "label": "绝区零官方",
+      "circle": "二游/绝区零",
+      "url": "https://live.bilibili.com/32805602",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本前瞻和特别节目事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "27354807",
+      "label": "鸣潮官方",
+      "circle": "二游/鸣潮",
+      "url": "https://live.bilibili.com/27354807",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本前瞻通讯事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "5555734",
+      "label": "明日方舟官方",
+      "circle": "二游/明日方舟",
+      "url": "https://live.bilibili.com/5555734",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "制作组通讯和周年特别节目事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "24782878",
+      "label": "尘白禁区官方",
+      "circle": "二游/尘白禁区",
+      "url": "https://live.bilibili.com/24782878",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本和节日特别节目事件驱动"
+    },
+    {
+      "platform": "bilibili",
+      "room_id": "21242511",
+      "label": "战双帕弥什官方",
+      "circle": "二游/战双帕弥什",
+      "url": "https://live.bilibili.com/21242511",
+      "sampling_bucket": "二游官方事件",
+      "preferred_local_hours": [19, 20, 21],
+      "schedule_note": "版本、音乐会和特别节目事件驱动"
     }
   ]
 }

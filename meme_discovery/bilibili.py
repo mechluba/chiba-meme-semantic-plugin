@@ -184,7 +184,12 @@ def fetch_creator_watchlist_videos(
     if not creators:
         return [], []
     max_creators = max(1, min(int(config.get("max_creators_per_run", 4)), len(creators)))
-    rotation_index = int(config.get("rotation_index", datetime.now(timezone.utc).date().toordinal())) % len(creators)
+    rotation_index = int(
+        config.get(
+            "rotation_index",
+            datetime.now(timezone.utc).date().toordinal() * max_creators,
+        )
+    ) % len(creators)
     selected = (creators + creators)[rotation_index : rotation_index + max_creators]
     max_videos_per_creator = max(1, int(config.get("max_videos_per_creator", 1)))
     max_age_days = max(1, int(config.get("max_age_days", 14)))

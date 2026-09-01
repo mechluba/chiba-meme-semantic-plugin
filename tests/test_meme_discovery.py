@@ -236,6 +236,27 @@ def test_creator_watchlist_only_keeps_exact_mid_and_recent_videos() -> None:
     ]
 
 
+def test_source_configs_cover_lol_streamers_and_gacha_communities() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    live_config = json.loads((repo_root / "ops" / "live_sampling.example.json").read_text(encoding="utf-8"))
+    discovery_config = json.loads((repo_root / "ops" / "p0_discovery.example.json").read_text(encoding="utf-8"))
+    watchlist = json.loads((repo_root / "ops" / "meme_source_watchlist.json").read_text(encoding="utf-8"))
+
+    live_room_ids = {str(item["room_id"]) for item in live_config["rooms"]}
+    assert {"252140", "96291", "1126960", "138243", "6682963"} <= live_room_ids
+    assert {"34348", "1151716", "942101"} <= live_room_ids
+    assert {"21987615", "27263119", "32805602", "27354807", "5555734"} <= live_room_ids
+
+    creators = discovery_config["sources"]["bilibili"]["creator_watchlist"]["creators"]
+    creator_mids = {str(item["mid"]) for item in creators}
+    assert {"14110780", "1871001", "1773346"} <= creator_mids
+    assert {"401742377", "1340190821", "1636034895", "1955897084", "161775300"} <= creator_mids
+
+    names = {item["name"] for item in watchlist["sources"]}
+    assert {"Doinb", "东北大鹌鹑", "余小C", "洞主", "Ning", "Uzi", "姿态", "TheShy"} <= names
+    assert {"原神", "崩坏星穹铁道", "绝区零", "鸣潮", "明日方舟", "尘白禁区", "战双帕弥什"} <= names
+
+
 def _varint(value: int) -> bytes:
     result = bytearray()
     while value >= 0x80:
