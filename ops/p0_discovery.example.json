@@ -161,13 +161,6 @@
         "label": "寅子",
         "circle": "主机游戏/娱乐",
         "url": "https://www.douyu.com/71415"
-      },
-      {
-        "platform": "huya",
-        "room_id": "10188",
-        "label": "DANK1NG",
-        "circle": "CS2/游戏",
-        "url": "https://www.huya.com/10188"
       }
     ],
     "jsonl_inbox": {
