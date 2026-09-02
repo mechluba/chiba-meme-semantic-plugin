@@ -246,6 +246,8 @@ def test_source_configs_cover_lol_streamers_and_gacha_communities() -> None:
     assert {"252140", "96291", "1126960", "138243", "6682963"} <= live_room_ids
     assert {"34348", "1151716", "942101"} <= live_room_ids
     assert {"21987615", "27263119", "32805602", "27354807", "5555734"} <= live_room_ids
+    huya_rooms = [item for item in live_config["rooms"] if item["platform"] == "huya"]
+    assert huya_rooms and all(item.get("enabled") is False for item in huya_rooms)
 
     creators = discovery_config["sources"]["bilibili"]["creator_watchlist"]["creators"]
     creator_mids = {str(item["mid"]) for item in creators}

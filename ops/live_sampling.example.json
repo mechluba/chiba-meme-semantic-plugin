@@ -49,7 +49,9 @@
       "circle": "CS2/游戏",
       "url": "https://www.huya.com/10188",
       "sampling_bucket": "游戏",
-      "preferred_local_hours": [18, 20, 22]
+      "preferred_local_hours": [18, 20, 22],
+      "enabled": false,
+      "disabled_reason": "虎牙弹幕采集需要正式账号登录态或接口凭据，暂不启用"
     },
     {
       "platform": "bilibili",
