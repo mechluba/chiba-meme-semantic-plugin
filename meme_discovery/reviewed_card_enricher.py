@@ -22,7 +22,7 @@ from .semantic_enricher import (
 )
 
 
-PROMPT_VERSION = "reviewed-expression-web-grounded-v3"
+PROMPT_VERSION = "reviewed-expression-web-grounded-v4"
 ALLOWED_SERVING_SCOPES = {"general", "circle_only"}
 ALLOWED_ACTIONS = {"USE", "UNDERSTAND_ONLY", "SKIP"}
 ALLOWED_FRESHNESS = {"emerging", "current", "established", "uncertain"}
@@ -473,6 +473,8 @@ def _messages(model_input: dict[str, Any]) -> list[dict[str, str]]:
                 f"{policy_rule}\n"
                 "输出且只输出这些字段：semantic_core、culture_scope、serving_scope、usage_routes、"
                 "required_context_signals、hard_blocks、positive_contexts、negative_contexts、retrieval_facets、research_synthesis。\n"
+                "semantic_core、culture_scope、serving_scope 必须是字符串；semantic_core 用一段完整中文概括真实含义和语用作用，"
+                "不能输出对象、分字段说明或字符串形式的字典。"
                 "serving_scope 只能是 general 或 circle_only。usage_routes 为1到3条，每条只能含 route_tag、when、"
                 "communicative_intent、allowed_realizations；allowed_realizations 只能从输入规范表达和别名中选择。"
                 "交流意图要写清楚用户想让对方理解、接受、质疑、关注、缓和或接续什么。"
@@ -568,7 +570,10 @@ def _select_evidence(rows: list[dict[str, Any]], *, limit: int) -> list[dict[str
 
 
 def _required_text(value: dict[str, Any], key: str, minimum: int) -> str:
-    text = str(value.get(key) or "").strip()
+    raw = value.get(key)
+    if not isinstance(raw, str):
+        raise SemanticEnrichmentError(f"{key} 必须是字符串")
+    text = raw.strip()
     if len(text) < minimum:
         raise SemanticEnrichmentError(f"{key} 缺失或过短")
     return text

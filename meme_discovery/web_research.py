@@ -21,7 +21,7 @@ import urllib.request
 from .miner import normalize_expression
 
 
-RESEARCH_VERSION = "meme-web-research-v2"
+RESEARCH_VERSION = "meme-web-research-v3-question-query"
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -113,6 +113,7 @@ def research_reviewed_groups(
         "moyu": lambda value: search_moyu(clients["moyu"], value),
         "bilibili": lambda value: search_bilibili(clients["bilibili"], value),
         "bing": lambda value: search_bing(clients["bing"], value),
+        "so_qa": lambda value: search_so_question(clients["so_qa"], value),
     }
     retrieved_at = datetime.now(timezone.utc).isoformat()
 
@@ -125,34 +126,41 @@ def research_reviewed_groups(
                 if source not in active_fetchers:
                     errors.append({"source": source, "query": expression, "error": "没有对应检索器"})
                     continue
+                search_query = _source_query(source, expression, item)
                 cache_key = hashlib.sha256(
-                    f"{RESEARCH_VERSION}\n{source}\n{expression}".encode("utf-8")
+                    f"{RESEARCH_VERSION}\n{source}\n{search_query}".encode("utf-8")
                 ).hexdigest()
                 cache_path = cache_dir / f"{cache_key}.json"
                 try:
                     if cache_path.exists():
                         source_results = json.loads(cache_path.read_text(encoding="utf-8"))["results"]
                     else:
-                        source_results = active_fetchers[source](expression)
+                        source_results = active_fetchers[source](search_query)
                         _write_json(
                             cache_path,
                             {
                                 "research_version": RESEARCH_VERSION,
                                 "source": source,
                                 "expression": expression,
+                                "query": search_query,
                                 "retrieved_at": retrieved_at,
                                 "results": source_results,
                             },
                         )
                     for row in source_results:
-                        row.setdefault("matched_query", expression)
+                        row.setdefault("matched_query", search_query)
                     results.extend(source_results)
                 except (WebResearchError, OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
-                    errors.append({"source": source, "query": expression, "error": str(exc)})
+                    errors.append({"source": source, "query": search_query, "error": str(exc)})
         results = _deduplicate_and_rank(results, expressions[0])[:maximum_results]
         return {
             "research_version": RESEARCH_VERSION,
             "queries": expressions,
+            "question_queries": [
+                _source_query("so_qa", expression, item)
+                for expression in expressions
+                if "so_qa" in source_names
+            ],
             "retrieved_at": retrieved_at,
             "status": _research_status(results),
             "freshness": _freshness(results, retrieved_at),
@@ -319,6 +327,55 @@ def search_bing(client: RateLimitedResearchClient, expression: str) -> list[dict
             )
         )
     return _relevant(results, expression)[:5]
+
+
+def search_so_question(client: RateLimitedResearchClient, question: str) -> list[dict[str, Any]]:
+    """用完整用户问句检索通用网页，补足只搜关键词时漏掉的新梗。"""
+    url = "https://www.so.com/s?" + urllib.parse.urlencode({"q": question})
+    body = client.get_text(url, referer="https://www.so.com/")
+    blocks = re.findall(
+        r'<li class="res-list[^"<>]*"[^>]*>(.*?)(?=<li class="res-list|</ol>)',
+        body,
+        flags=re.DOTALL,
+    )
+    results: list[dict[str, Any]] = []
+    for block in blocks[:10]:
+        heading = re.search(
+            r'<h3[^>]*class="[^"]*res-title[^"]*"[^>]*>(.*?)</h3>',
+            block,
+            re.DOTALL,
+        )
+        if not heading:
+            continue
+        anchor = re.search(r"<a\s+([^>]+)>(.*?)</a>", heading.group(1), re.DOTALL)
+        if not anchor:
+            continue
+        attrs, title_html = anchor.groups()
+        direct = re.search(r'data-mdurl="([^"]+)"', attrs)
+        href = re.search(r'href="([^"]+)"', attrs)
+        target_match = direct or href
+        target = html.unescape(target_match.group(1)) if target_match else ""
+        if not target or target.startswith("https://www.so.com/link?"):
+            continue
+        summary = re.search(
+            r'class="(?:res-list-summary|res-desc)[^"]*"[^>]*>(.*?)</(?:span|p)>',
+            block,
+            re.DOTALL,
+        )
+        snippet = _clean_html(summary.group(1) if summary else "")
+        results.append(
+            _result(
+                provider="so_qa",
+                source_kind="question_search_result",
+                title=_clean_html(title_html),
+                url=target,
+                snippet=snippet,
+                published_at=_date_from_text(snippet),
+                source_tier="indexed_web",
+                extra={"search_question": question},
+            )
+        )
+    return _relevant(results, _question_expression(question))[:5]
 
 
 class _BingResultParser(HTMLParser):
@@ -491,9 +548,30 @@ def _search_expressions(item: dict[str, Any]) -> list[str]:
     canonical = str(item.get("canonical_expression") or "").strip()
     aliases = [str(value).strip() for value in item.get("aliases") or [] if str(value).strip()]
     values = [canonical, *aliases]
-    if ("（" in canonical or " / " in canonical) and aliases:
+    if " / " in canonical and aliases:
+        values = [*aliases, canonical]
+    elif "（" in canonical and aliases:
         values = [aliases[0], canonical, *aliases[1:]]
     return list(dict.fromkeys(value for value in values if value))[:2]
+
+
+def _source_query(source: str, expression: str, item: dict[str, Any]) -> str:
+    if source != "so_qa":
+        return expression
+    rooms = (item.get("signals") or {}).get("live_rooms") or []
+    circles = (item.get("signals") or {}).get("top_circles") or []
+    if rooms and rooms[0].get("name"):
+        context = f"在{rooms[0]['name']}直播间弹幕中"
+    elif circles and circles[0].get("name"):
+        context = f"在{circles[0]['name']}视频弹幕中"
+    else:
+        context = "在视频弹幕中"
+    return f"{context}看到“{expression}”是什么意思，是什么梗"
+
+
+def _question_expression(question: str) -> str:
+    match = re.search(r"[“\"](.+?)[”\"]", question)
+    return match.group(1) if match else question
 
 
 def _clean_html(value: str) -> str:

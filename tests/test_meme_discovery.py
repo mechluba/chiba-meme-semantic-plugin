@@ -35,7 +35,11 @@ from meme_discovery.reviewed_card_review import (
     render_review_html,
     validate_storage_cards,
 )
-from meme_discovery.web_research import research_reviewed_groups, search_gengwh
+from meme_discovery.web_research import (
+    research_reviewed_groups,
+    search_gengwh,
+    search_so_question,
+)
 from meme_discovery import pipeline
 
 
@@ -1094,3 +1098,26 @@ def test_gengwh_search_parser_keeps_short_public_excerpt() -> None:
     assert len(results) == 1
     assert results[0]["url"] == "https://www.gengwh.com/read/351"
     assert results[0]["snippet"] == "B站观众用“ 你币有了 ”表示已经投币。"
+
+
+def test_question_search_uses_expression_inside_natural_language_query() -> None:
+    class FakeClient:
+        def get_text(self, url: str, *, referer: str | None = None) -> str:
+            assert "%E5%BC%B9%E5%B9%95" in url
+            return """
+            <ol>
+              <li class="res-list">
+                <h3 class="res-title"><a href="https://www.so.com/link?x=1"
+                  data-mdurl="https://example.test/guide">设备玩耍是什么梗</a></h3>
+                <p class="res-desc">玩机器直播间用来调侃 device 选手的固定说法。</p>
+              </li>
+            </ol>
+            """
+
+    results = search_so_question(
+        FakeClient(), "在玩机器直播间弹幕中看到“设备玩耍”是什么意思，是什么梗"
+    )
+
+    assert len(results) == 1
+    assert results[0]["url"] == "https://example.test/guide"
+    assert results[0]["search_question"].startswith("在玩机器直播间")

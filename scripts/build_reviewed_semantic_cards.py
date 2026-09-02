@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import argparse
+import copy
 import json
 import sys
 
@@ -89,6 +90,66 @@ def research(args: argparse.Namespace) -> None:
     print(json.dumps(document["web_research_report"], ensure_ascii=False))
 
 
+def select_rejected(args: argparse.Namespace) -> None:
+    document = _read_json(Path(args.input))
+    decisions_document = _read_json(Path(args.decisions))
+    decisions = decisions_document.get("decisions") or decisions_document
+    rejected_ids = {
+        str(card_id)
+        for card_id, decision in decisions.items()
+        if decision.get("decision") == "reject"
+    }
+    selected: list[dict[str, Any]] = []
+    for source_item in document.get("items") or []:
+        card = source_item.get("storage_card") or {}
+        decision = decisions.get(card.get("card_id")) or {}
+        if decision.get("decision") != "reject":
+            continue
+        item = copy.deepcopy(source_item)
+        item["first_review"] = {
+            "decision": "reject",
+            "reviewed_at": decisions_document.get("exported_at"),
+        }
+        item["semantic_status"] = "prepared"
+        item["storage_card"] = None
+        item.pop("semantic_output", None)
+        item.pop("semantic_error", None)
+        selected.append(item)
+    # 从未修改的输入条目核对，避免审核文件与草稿错配时静默漏项。
+    available_rejected_ids = {
+        str((item.get("storage_card") or {}).get("card_id") or "")
+        for item in document.get("items") or []
+        if str((item.get("storage_card") or {}).get("card_id") or "") in rejected_ids
+    }
+    missing = rejected_ids - available_rejected_ids
+    if missing:
+        raise ValueError(f"审核记录中的淘汰项不在输入草稿中: {sorted(missing)}")
+    document["items"] = selected
+    document["report_kind"] = "first_review_rejected_expression_second_review"
+    document["review_title"] = "一审淘汰梗二审"
+    document["source_first_review"] = {
+        "path_name": Path(args.decisions).name,
+        "exported_at": decisions_document.get("exported_at"),
+        "reject_count": len(selected),
+    }
+    document["summary"] = {
+        "prepared_group_count": len(selected),
+        "prepared_expression_count": sum(
+            1 + len(item.get("aliases") or []) for item in selected
+        ),
+        "prior_refine_group_count": sum(
+            item.get("prior_serving_policy") == "refine" for item in selected
+        ),
+        "prior_understand_group_count": sum(
+            item.get("prior_serving_policy") == "understand" for item in selected
+        ),
+    }
+    document.pop("semantic_enrichment_report", None)
+    document.pop("web_research_report", None)
+    _write_json(Path(args.output), document)
+    print(json.dumps(document["summary"], ensure_ascii=False))
+
+
 def render(args: argparse.Namespace) -> None:
     document = _read_json(Path(args.input))
     errors = validate_storage_cards(document)
@@ -133,6 +194,12 @@ def build_parser() -> argparse.ArgumentParser:
     research_parser.add_argument("--cache-dir", required=True)
     research_parser.add_argument("--output", required=True)
     research_parser.set_defaults(handler=research)
+
+    rejected_parser = subparsers.add_parser("select-rejected")
+    rejected_parser.add_argument("--input", required=True)
+    rejected_parser.add_argument("--decisions", required=True)
+    rejected_parser.add_argument("--output", required=True)
+    rejected_parser.set_defaults(handler=select_rejected)
 
     enrich_parser = subparsers.add_parser("enrich")
     enrich_parser.add_argument("--input", required=True)
