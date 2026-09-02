@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 import os
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - 仅供旧版系统 Python 的离线工具兼容
+    import tomli as tomllib
 
 
 class ChibaModelConfigError(RuntimeError):

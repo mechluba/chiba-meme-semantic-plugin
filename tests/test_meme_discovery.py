@@ -28,6 +28,13 @@ from meme_discovery.lifecycle import (
 from meme_discovery.miner import mine_candidates, normalize_expression
 from meme_discovery.semantic_calibrator import calibrate_candidates
 from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
+from meme_discovery.reviewed_card_enricher import enrich_reviewed_groups, prepare_reviewed_groups
+from meme_discovery.reviewed_card_review import (
+    ONLINE_CARD_KEYS,
+    build_pending_library,
+    render_review_html,
+    validate_storage_cards,
+)
 from meme_discovery import pipeline
 
 
@@ -858,3 +865,136 @@ def _semantic_candidate() -> dict[str, object]:
         {"min_occurrences": 3, "min_cross_content_occurrences": 2, "min_distinct_contents": 2},
     )
     return candidates[0]
+
+
+def test_reviewed_card_pipeline_only_uses_explicitly_retained_groups(tmp_path: Path) -> None:
+    second_pass = {
+        "source_decisions": {"date_range": "2026-08-27..2026-08-31", "reviewed_count": 3},
+        "groups": [
+            {
+                "group_id": "keep",
+                "canonical_expression": "无量空处",
+                "members": ["无量空处", "无量空处了"],
+                "content_type_proposal": "meme",
+                "serving_policy_proposal": "understand",
+                "message_count": 3,
+            },
+            {
+                "group_id": "unreviewed",
+                "canonical_expression": "待定口癖",
+                "members": ["待定口癖"],
+                "content_type_proposal": "catchphrase",
+                "serving_policy_proposal": "pending",
+            },
+        ],
+    }
+    summary = {"candidates": [{"phrase": "无量空处", "aliases": ["无量空处了"]}]}
+    evidence = [
+        {
+            "evidence_id": "e1",
+            "content": "无量空处",
+            "content_id": "BV1:1",
+            "platform": "bilibili",
+            "source_id": "BV1TEST",
+            "circle": "泛二次元",
+        }
+    ]
+    prepared = prepare_reviewed_groups(second_pass, summary, evidence)
+
+    assert prepared["summary"]["prepared_group_count"] == 1
+    assert prepared["items"][0]["aliases"] == ["无量空处了"]
+
+    semantic = {
+        "semantic_core": "借领域展开造成的信息过载，告知对方自己已经完全看懵",
+        "culture_scope": "中文互联网泛二次元",
+        "serving_scope": "circle_only",
+        "usage_routes": [
+            {
+                "route_tag": "看懵求简化",
+                "when": "对方连续抛出大量设定和术语，自己已无法继续跟上时",
+                "communicative_intent": "让对方意识到信息密度过高，并把说明改成更容易理解的版本",
+                "allowed_realizations": ["无量空处", "无量空处了"],
+            }
+        ],
+        "required_context_signals": ["前文信息密集", "说话者明确表示看不懂"],
+        "hard_blocks": ["严肃求助场景", "对方不了解该圈层"],
+        "positive_contexts": [
+            {"context": "用户在复杂说明后说脑子已经被信息塞满了", "expected_action": "UNDERSTAND_ONLY"},
+            {"context": "用户引用该词表示自己完全跟不上设定讲解", "expected_action": "UNDERSTAND_ONLY"},
+        ],
+        "negative_contexts": [
+            {"context": "用户正在询问作品中术式的准确设定是什么", "expected_action": "SKIP", "reason": "需要直接回答事实"},
+            {"context": "用户描述真实身体不适和认知困难需要帮助", "expected_action": "SKIP", "reason": "健康求助不应玩梗"},
+            {"context": "对话中没有信息过载也没有相关圈层信号", "expected_action": "SKIP", "reason": "缺少语义锚点"},
+        ],
+        "retrieval_facets": ["信息过载", "完全看懵", "复杂设定"],
+    }
+    config = {"resolved_model": {"api_key": "test", "model": "fake"}}
+    enriched = enrich_reviewed_groups(
+        prepared,
+        config,
+        cache_dir=tmp_path / "cache",
+        completion=lambda messages, resolved: json.dumps(semantic, ensure_ascii=False),
+    )
+    card = enriched["items"][0]["storage_card"]
+
+    assert set(card) == ONLINE_CARD_KEYS
+    assert card["human_review"]["status"] == "pending"
+    assert card["positive_contexts"][0]["expected_action"] == "UNDERSTAND_ONLY"
+    assert validate_storage_cards(enriched) == []
+    assert build_pending_library(enriched)["card_count"] == 1
+
+    page = render_review_html(enriched)
+    assert "存储内容 JSON（已折叠，可直接编辑）" in page
+    assert "<textarea" in page
+    assert "fetch(" not in page
+    assert "/Users/" not in page
+
+
+def test_reviewed_card_rejects_vague_intent_even_inside_long_sentence(tmp_path: Path) -> None:
+    semantic = {
+        "semantic_core": "用夸张说法表示自己被大量信息冲击到无法继续理解",
+        "culture_scope": "中文互联网",
+        "serving_scope": "general",
+        "usage_routes": [
+            {
+                "route_tag": "空泛路线",
+                "when": "对方给出大量复杂说明而用户已经无法跟上时",
+                "communicative_intent": "让对方知道自己正在参与玩梗并形成共鸣",
+                "allowed_realizations": ["无量空处"],
+            }
+        ],
+        "required_context_signals": ["信息密集", "用户表示看懵"],
+        "hard_blocks": ["严肃求助", "无上下文"],
+        "positive_contexts": [
+            {"context": "复杂说明后用户明确表示自己已经看不懂了", "expected_action": "USE"},
+            {"context": "用户希望对方把高密度内容重新简化说明", "expected_action": "UNDERSTAND_ONLY"},
+        ],
+        "negative_contexts": [
+            {"context": "用户询问作品中的准确设定和事实信息", "expected_action": "SKIP", "reason": "应直接回答事实"},
+            {"context": "用户报告真实身体不适并希望获得帮助", "expected_action": "SKIP", "reason": "不应玩笑回应"},
+            {"context": "对话没有出现任何信息过载或理解困难", "expected_action": "SKIP", "reason": "缺少触发信号"},
+        ],
+        "retrieval_facets": ["信息过载", "看不懂", "复杂说明"],
+    }
+    document = {
+        "items": [
+            {
+                "group_id": "g1",
+                "canonical_expression": "无量空处",
+                "aliases": [],
+                "prior_serving_policy": "refine",
+                "signals": {},
+                "evidence": [],
+            }
+        ]
+    }
+    enriched = enrich_reviewed_groups(
+        document,
+        {"validation_repair_attempts": 0},
+        cache_dir=tmp_path / "cache",
+        completion=lambda messages, resolved: json.dumps(semantic, ensure_ascii=False),
+    )
+
+    assert enriched["semantic_enrichment_report"]["failure_count"] == 1
+    assert "过于空泛" in enriched["items"][0]["semantic_error"]
