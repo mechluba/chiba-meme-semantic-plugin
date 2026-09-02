@@ -24,6 +24,7 @@ from meme_discovery.reviewed_card_review import (  # noqa: E402
     render_review_html,
     validate_storage_cards,
 )
+from meme_discovery.web_research import research_reviewed_groups  # noqa: E402
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -78,6 +79,16 @@ def enrich(args: argparse.Namespace) -> None:
     print(json.dumps(document["semantic_enrichment_report"], ensure_ascii=False))
 
 
+def research(args: argparse.Namespace) -> None:
+    document = research_reviewed_groups(
+        _read_json(Path(args.input)),
+        _read_json(Path(args.config)),
+        cache_dir=Path(args.cache_dir),
+    )
+    _write_json(Path(args.output), document)
+    print(json.dumps(document["web_research_report"], ensure_ascii=False))
+
+
 def render(args: argparse.Namespace) -> None:
     document = _read_json(Path(args.input))
     errors = validate_storage_cards(document)
@@ -115,6 +126,13 @@ def build_parser() -> argparse.ArgumentParser:
     prepare_parser.add_argument("--evidence", action="append", default=[])
     prepare_parser.add_argument("--output", required=True)
     prepare_parser.set_defaults(handler=prepare)
+
+    research_parser = subparsers.add_parser("research")
+    research_parser.add_argument("--input", required=True)
+    research_parser.add_argument("--config", required=True)
+    research_parser.add_argument("--cache-dir", required=True)
+    research_parser.add_argument("--output", required=True)
+    research_parser.set_defaults(handler=research)
 
     enrich_parser = subparsers.add_parser("enrich")
     enrich_parser.add_argument("--input", required=True)

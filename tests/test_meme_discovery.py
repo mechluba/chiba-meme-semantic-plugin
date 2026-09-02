@@ -35,6 +35,7 @@ from meme_discovery.reviewed_card_review import (
     render_review_html,
     validate_storage_cards,
 )
+from meme_discovery.web_research import research_reviewed_groups, search_gengwh
 from meme_discovery import pipeline
 
 
@@ -903,6 +904,25 @@ def test_reviewed_card_pipeline_only_uses_explicitly_retained_groups(tmp_path: P
 
     assert prepared["summary"]["prepared_group_count"] == 1
     assert prepared["items"][0]["aliases"] == ["无量空处了"]
+    prepared["items"][0]["web_research"] = {
+        "research_version": "test-v1",
+        "retrieved_at": "2026-09-02T00:00:00+00:00",
+        "status": "current_usage_only",
+        "freshness": {"class": "recent_90d"},
+        "results": [
+            {
+                "source_id": "web-guide",
+                "provider": "bilibili",
+                "source_kind": "recent_video_usage",
+                "source_tier": "contemporaneous_platform_usage",
+                "title": "无量空处梗指南",
+                "url": "https://www.bilibili.com/video/BV1GUIDE/",
+                "snippet": "用于形容一次接收太多信息而彻底看懵。",
+                "published_at": "2026-08-30T00:00:00+00:00",
+                "match_quality": "title_exact",
+            }
+        ],
+    }
 
     semantic = {
         "semantic_core": "借领域展开造成的信息过载，告知对方自己已经完全看懵",
@@ -913,7 +933,7 @@ def test_reviewed_card_pipeline_only_uses_explicitly_retained_groups(tmp_path: P
                 "route_tag": "看懵求简化",
                 "when": "对方连续抛出大量设定和术语，自己已无法继续跟上时",
                 "communicative_intent": "让对方意识到信息密度过高，并把说明改成更容易理解的版本",
-                "allowed_realizations": ["无量空处", "无量空处了"],
+                "allowed_realizations": ["无 量 空 处！", "无量空处了"],
             }
         ],
         "required_context_signals": ["前文信息密集", "说话者明确表示看不懂"],
@@ -928,6 +948,13 @@ def test_reviewed_card_pipeline_only_uses_explicitly_retained_groups(tmp_path: P
             {"context": "对话中没有信息过载也没有相关圈层信号", "expected_action": "SKIP", "reason": "缺少语义锚点"},
         ],
         "retrieval_facets": ["信息过载", "完全看懵", "复杂设定"],
+        "research_synthesis": {
+            "origin_summary": "公开检索未找到足以核定典故的来源，暂按圈层用法理解",
+            "current_usage_summary": "弹幕中用于告诉对方自己被高密度信息彻底弄懵",
+            "freshness_assessment": "current",
+            "research_confidence": "medium",
+            "supporting_source_ids": ["web-guide"],
+        },
     }
     config = {"resolved_model": {"api_key": "test", "model": "fake"}}
     enriched = enrich_reviewed_groups(
@@ -940,12 +967,16 @@ def test_reviewed_card_pipeline_only_uses_explicitly_retained_groups(tmp_path: P
 
     assert set(card) == ONLINE_CARD_KEYS
     assert card["human_review"]["status"] == "pending"
+    assert card["usage_routes"][0]["allowed_realizations"] == ["无量空处", "无量空处了"]
     assert card["positive_contexts"][0]["expected_action"] == "UNDERSTAND_ONLY"
+    assert card["knowledge"]["source_material"]["web_research"]["sources"][0]["source_id"] == "web-guide"
     assert validate_storage_cards(enriched) == []
     assert build_pending_library(enriched)["card_count"] == 1
 
     page = render_review_html(enriched)
     assert "存储内容 JSON（已折叠，可直接编辑）" in page
+    assert "互联网检索材料" in page
+    assert "全部检索状态" in page
     assert "<textarea" in page
     assert "fetch(" not in page
     assert "/Users/" not in page
@@ -976,6 +1007,13 @@ def test_reviewed_card_rejects_vague_intent_even_inside_long_sentence(tmp_path: 
             {"context": "对话没有出现任何信息过载或理解困难", "expected_action": "SKIP", "reason": "缺少触发信号"},
         ],
         "retrieval_facets": ["信息过载", "看不懂", "复杂说明"],
+        "research_synthesis": {
+            "origin_summary": "公开检索未找到足以核定典故的来源，暂按圈层用法理解",
+            "current_usage_summary": "弹幕中用于告诉对方自己被高密度信息彻底弄懵",
+            "freshness_assessment": "current",
+            "research_confidence": "low",
+            "supporting_source_ids": [],
+        },
     }
     document = {
         "items": [
@@ -998,3 +1036,61 @@ def test_reviewed_card_rejects_vague_intent_even_inside_long_sentence(tmp_path: 
 
     assert enriched["semantic_enrichment_report"]["failure_count"] == 1
     assert "过于空泛" in enriched["items"][0]["semantic_error"]
+
+
+def test_web_research_combines_encyclopedia_and_recent_usage(tmp_path: Path) -> None:
+    document = {"items": [{"canonical_expression": "你币有了", "aliases": []}]}
+    encyclopedia = {
+        "source_id": "web-encyclopedia",
+        "provider": "gengwh",
+        "source_kind": "meme_encyclopedia",
+        "source_tier": "community_encyclopedia",
+        "title": "你币有了是什么梗？",
+        "url": "https://example.test/encyclopedia",
+        "snippet": "B站观众用于表示已经投币，也可以调侃催投币。",
+        "published_at": "2026-08-30T00:00:00+00:00",
+        "match_quality": "title_exact",
+        "relevance_score": 1.0,
+    }
+    recent_video = {
+        "source_id": "web-video",
+        "provider": "bilibili",
+        "source_kind": "recent_video_usage",
+        "source_tier": "contemporaneous_platform_usage",
+        "title": "你币有了：投币名场面",
+        "url": "https://example.test/video",
+        "snippet": "近期弹幕用法整理",
+        "published_at": "2026-08-31T00:00:00+00:00",
+        "match_quality": "title_exact",
+        "relevance_score": 1.0,
+    }
+    enriched = research_reviewed_groups(
+        document,
+        {"sources": ["gengwh", "bilibili"], "workers": 2},
+        cache_dir=tmp_path / "research-cache",
+        fetchers={"gengwh": lambda value: [encyclopedia], "bilibili": lambda value: [recent_video]},
+    )
+
+    research = enriched["items"][0]["web_research"]
+    assert research["status"] == "origin_and_current_usage"
+    assert research["freshness"]["class"] == "recent_90d"
+    assert research["provider_count"] == 2
+
+
+def test_gengwh_search_parser_keeps_short_public_excerpt() -> None:
+    class FakeClient:
+        def get_text(self, url: str, *, referer: str | None = None) -> str:
+            assert "/operate/search?" in url
+            return """
+            <div class="search-result-item">
+              <div class="result-title"><a href="/read/351">你币有了是什么梗？</a></div>
+              <div class="result-excerpt">B站观众用“<span>你币有了</span>”表示已经投币。</div>
+              <span>📅 3天前</span>
+            </div></div>﻿
+            """
+
+    results = search_gengwh(FakeClient(), "你币有了")
+
+    assert len(results) == 1
+    assert results[0]["url"] == "https://www.gengwh.com/read/351"
+    assert results[0]["snippet"] == "B站观众用“ 你币有了 ”表示已经投币。"
