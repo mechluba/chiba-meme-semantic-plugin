@@ -30,15 +30,70 @@ from .meme_runtime import (
 )
 
 
-PLUGIN_VERSION = "1.0.2"
+PLUGIN_VERSION = "1.0.3"
 DEFAULT_RELEASE_ID = (
-    "reviewed-semantic-meme-library-20260729-multiprototype-v1"
+    "reviewed-semantic-meme-library-20260904-v1"
 )
 DEFAULT_UNDERSTAND_ONLY_CARD_IDS = [
     "broad-meme-d1c18154ab138e16",
     "broad-meme-ea3d0eaf19852463",
     "broad-meme-b6b65bba580828f1",
     "broad-meme-5bd5f3edfb5e4f10",
+    "reviewed-meme-2eb1ae93f8fb50f5",
+    "reviewed-meme-cea4d5ecea4bf9f8",
+    "reviewed-meme-5da12bda27ffe560",
+    "reviewed-meme-6860f7fd4e08403c",
+    "reviewed-meme-4ed344e8c6723e55",
+    "reviewed-meme-6f347e874dd8dd43",
+    "reviewed-meme-6f066b18f596e803",
+    "reviewed-meme-19b3f940c1360cf8",
+    "reviewed-meme-4786d71c7fca1351",
+    "reviewed-meme-655ad98f089b5009",
+    "reviewed-meme-7c814a7fd96ac146",
+    "reviewed-meme-e020b47657423cd4",
+    "reviewed-meme-4981ff066e2ffe19",
+    "reviewed-meme-48e665d676f690dd",
+    "reviewed-meme-61a030fab3381591",
+    "reviewed-meme-e0afd86a8201f814",
+    "reviewed-meme-66228fc18ebecd1c",
+    "reviewed-meme-eae60d3028d20b66",
+    "reviewed-meme-dea37da02ebf4325",
+    "reviewed-meme-0f94aea1203be088",
+    "reviewed-meme-d30188cf1c8fbde7",
+    "reviewed-meme-ac3afb3fef678be0",
+    "reviewed-meme-007471c640654641",
+    "reviewed-meme-cdc8db3d5bb468b4",
+    "reviewed-meme-73211e57043bc327",
+    "reviewed-meme-29cdec286ecabaab",
+    "reviewed-meme-d4d8a4c7817a3600",
+    "reviewed-meme-ef2da7c160951a6e",
+    "reviewed-meme-a210768434503e5c",
+    "reviewed-meme-cd049738b79f9942",
+    "reviewed-meme-ffdebb6cf663670e",
+    "reviewed-meme-e8104a94ea708725",
+    "reviewed-meme-72d3ab48c28737f3",
+    "reviewed-meme-c35ee6f27abdcc4c",
+    "reviewed-meme-132201e0862e197d",
+    "reviewed-meme-1f945b515bef6acd",
+    "reviewed-meme-d61607e9b90be7c5",
+    "reviewed-meme-a9377fac9ac44ad6",
+    "reviewed-meme-faaca3c612bea29b",
+    "reviewed-meme-7b0a05fb7e816f1c",
+    "reviewed-meme-97faf3702e7baf6a",
+    "reviewed-meme-84768ba3bcb963da",
+    "reviewed-meme-252e504081f026bc",
+    "reviewed-meme-470b0fe702a2bb14",
+    "reviewed-meme-5d0efe90386b2823",
+    "reviewed-meme-e42dc3faab2273d6",
+    "reviewed-meme-267ba26aa45d19be",
+    "reviewed-meme-7e61a0e77507f1cb",
+    "reviewed-meme-c1497de78801f46e",
+    "reviewed-meme-1cb6bfc63eb37a08",
+    "reviewed-meme-5c7f96f2219739e1",
+    "reviewed-meme-f0017bc8c2d499e0",
+    "reviewed-meme-378462c37642c887",
+    "reviewed-meme-a980fd20de5b762e",
+    "reviewed-meme-26a62e2f4e1988b1",
 ]
 
 

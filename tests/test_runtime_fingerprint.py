@@ -14,6 +14,7 @@ PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 CHIBA_ROOT = PLUGIN_ROOT.parents[1]
 SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "runtime_fingerprint.py"
 DIFF_SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "diff_runtime_fingerprints.py"
+RELEASE_ID = "reviewed-semantic-meme-library-20260904-v1"
 
 
 def _load_fingerprint_module() -> Any:
@@ -44,13 +45,13 @@ def test_runtime_fingerprint_contains_behavior_critical_inputs() -> None:
         chiba_root=CHIBA_ROOT,
         plugin_root=PLUGIN_ROOT,
         environment="test",
-        release_id="reviewed-semantic-meme-library-20260729-multiprototype-v1",
+        release_id=RELEASE_ID,
     )
     compatibility = payload["compatibility"]
     assert len(payload["compatibility_sha256"]) == 64
     assert compatibility["plugin"]["id"] == "chiba.meme-semantic-plugin"
     assert compatibility["plugin"]["config"]["plugin"]["enabled"] is True
-    assert compatibility["release"]["card_count"] == 27
+    assert compatibility["release"]["card_count"] == 156
     assert set(compatibility["model_routing"]["tasks"]) == {
         "planner",
         "replyer",
@@ -146,7 +147,7 @@ def test_identical_compatibility_matches_across_environment_labels(
         chiba_root=CHIBA_ROOT,
         plugin_root=PLUGIN_ROOT,
         environment="staging",
-        release_id="reviewed-semantic-meme-library-20260729-multiprototype-v1",
+        release_id=RELEASE_ID,
     )
     right = dict(left)
     right["environment"] = "production"
@@ -173,7 +174,7 @@ def test_behavior_difference_blocks_promotion(tmp_path: Path) -> None:
         chiba_root=CHIBA_ROOT,
         plugin_root=PLUGIN_ROOT,
         environment="staging",
-        release_id="reviewed-semantic-meme-library-20260729-multiprototype-v1",
+        release_id=RELEASE_ID,
     )
     right = json.loads(json.dumps(left))
     right["environment"] = "production"
