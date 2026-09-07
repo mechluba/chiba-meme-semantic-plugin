@@ -619,10 +619,13 @@ def _search_expressions(item: dict[str, Any]) -> list[str]:
 def _source_query(source: str, expression: str, item: dict[str, Any]) -> str:
     if source != "so_qa":
         return expression
+    explicit_context = str(item.get("search_context") or "").strip()
     rooms = (item.get("signals") or {}).get("live_rooms") or []
     circles = (item.get("signals") or {}).get("top_circles") or []
     occurrence_contexts = item.get("occurrence_contexts") or []
-    if rooms and rooms[0].get("name"):
+    if explicit_context:
+        context = explicit_context
+    elif rooms and rooms[0].get("name"):
         context = f"在{rooms[0]['name']}直播间弹幕中"
     elif circles and circles[0].get("name"):
         context = f"在{circles[0]['name']}视频弹幕中"

@@ -550,12 +550,16 @@ def _render_review_html(document: dict[str, Any]) -> str:
         card_class = "meme" if classification == "meme_candidate" else "compact"
         if enrichment.get("status") == "error":
             card_class = "error"
+        meta = (
+            "人工输入 · 待审"
+            if candidate.get("candidate_kind") == "manual_meme_name"
+            else f"{signals['message_count']} 条 · {signals['distinct_content_count']} 个内容 · 待审"
+        )
         row = (
             f"<article class=\"{card_class}\" data-candidate-id=\""
             f"{html.escape(str(candidate['candidate_id']))}\">"
             f"<h2>{html.escape(candidate['phrase'])}</h2>"
-            f"<span class=\"meta\">{signals['message_count']} 条 · "
-            f"{signals['distinct_content_count']} 个内容 · 待审</span>"
+            f"<span class=\"meta\">{meta}</span>"
             f"{semantic}"
             "</article>"
         )

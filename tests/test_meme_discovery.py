@@ -1,11 +1,12 @@
 """P0 热梗候选离线发现测试。"""
 
+import json
 from pathlib import Path
 
-import json
 import numpy as np
 import pytest
 
+from meme_discovery import pipeline
 from meme_discovery.bilibili import (
     fetch_creator_watchlist_videos,
     fetch_recommended_videos,
@@ -13,6 +14,11 @@ from meme_discovery.bilibili import (
 )
 from meme_discovery.chiba_model_config import public_model_metadata, resolve_chiba_task
 from meme_discovery.evidence_filter import filter_review_evidence
+from meme_discovery.lifecycle import (
+    select_inventory_decay_review,
+    select_rejected_for_rereview,
+    time_decay_weight,
+)
 from meme_discovery.live_sampler import (
     _select_rooms,
     bilibili_event_to_message,
@@ -20,14 +26,8 @@ from meme_discovery.live_sampler import (
     decode_douyu_packets,
     douyu_record_to_message,
 )
-from meme_discovery.lifecycle import (
-    select_inventory_decay_review,
-    select_rejected_for_rereview,
-    time_decay_weight,
-)
+from meme_discovery.manual_intake import build_manual_candidates, run_manual_intake
 from meme_discovery.miner import mine_candidates, normalize_expression
-from meme_discovery.semantic_calibrator import calibrate_candidates
-from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
 from meme_discovery.reviewed_card_enricher import enrich_reviewed_groups, prepare_reviewed_groups
 from meme_discovery.reviewed_card_review import (
     ONLINE_CARD_KEYS,
@@ -35,13 +35,14 @@ from meme_discovery.reviewed_card_review import (
     render_review_html,
     validate_storage_cards,
 )
+from meme_discovery.semantic_calibrator import calibrate_candidates
+from meme_discovery.semantic_enricher import SemanticEnrichmentError, enrich_candidates
 from meme_discovery.web_research import (
     research_candidates,
     research_reviewed_groups,
     search_gengwh,
     search_so_question,
 )
-from meme_discovery import pipeline
 
 
 def _douyu_packet(text: str) -> bytes:
@@ -578,6 +579,128 @@ def test_evidence_redacts_explicit_mentions() -> None:
     )
 
     assert item["content"] == "@用户 这个梗好用"
+
+
+def test_manual_meme_names_are_independent_candidates_without_aliases() -> None:
+    candidates = build_manual_candidates(["无量空处", "无量空处"], run_id="manual-test")
+
+    assert [candidate["phrase"] for candidate in candidates] == ["无量空处", "无量空处"]
+    assert candidates[0]["candidate_id"] != candidates[1]["candidate_id"]
+    assert all(candidate["aliases"] == [] for candidate in candidates)
+    assert all(candidate["candidate_kind"] == "manual_meme_name" for candidate in candidates)
+
+
+def test_manual_meme_name_runs_search_then_llm_and_writes_review_files(tmp_path: Path) -> None:
+    stages: list[str] = []
+    model_messages: list[dict[str, str]] = []
+
+    def search(question: str) -> list[dict[str, object]]:
+        stages.append("research")
+        assert question == "在中文互联网、评论区或弹幕中看到“无量空处”是什么意思，是什么梗"
+        return [
+            {
+                "source_id": "web-guide",
+                "provider": "so_qa",
+                "source_kind": "question_search_result",
+                "source_tier": "indexed_web",
+                "title": "无量空处梗指南",
+                "url": "https://example.test/meme-guide",
+                "snippet": "无量空处常被借来夸张表达信息过载和大脑宕机。",
+                "published_at": "2026-08-01T00:00:00Z",
+                "relevance_score": 1.0,
+            }
+        ]
+
+    draft = {
+        "classification": "meme_candidate",
+        "classification_reason": "检索材料支持该作品用语已被借用于表达信息过载，不是单纯字面描述。",
+        "semantic_core": "借作品能力名夸张表示自己因信息过载而大脑宕机。",
+        "culture_scope": "咒术回战及中文互联网",
+        "usage_routes": [
+            {
+                "route_tag": "信息过载自嘲",
+                "when": "对方刚给出大量复杂信息，用户已经明确表示自己看懵或跟不上时。",
+                "communicative_intent": "用夸张自嘲告诉对方自己已经处理不过来，并轻松请求对方放慢或简化说明。",
+                "response_function": "承接用户的混乱感，同时把后续对话引向拆解和澄清信息。",
+                "required_context_signals": ["刚出现密集复杂信息", "用户明确表达看懵或过载"],
+                "audience_requirements": ["对方熟悉该作品或已主动使用类似表达"],
+                "allowed_realizations": ["无量空处"],
+                "evidence_ids": [],
+                "confidence": 0.78,
+            }
+        ],
+        "required_context_signals": ["信息量突然升高", "用户已有困惑或过载信号"],
+        "hard_blocks": ["真实医疗认知异常", "要求严谨核对的正式场景"],
+        "positive_contexts": [
+            {
+                "context": "朋友一次发来十几条复杂设定，用户说自己已经完全看懵了。",
+                "user_intent": "自嘲信息过载并希望对方讲慢一点。",
+                "expected_action": "USE",
+            },
+            {
+                "context": "用户主动说这段说明看得自己无量空处了。",
+                "user_intent": "引用梗表示脑子宕机并希望得到梳理。",
+                "expected_action": "UNDERSTAND_ONLY",
+            },
+        ],
+        "negative_contexts": [
+            {
+                "context": "用户因药物出现意识模糊并寻求帮助。",
+                "reason": "医疗风险不能用梗淡化。",
+                "expected_action": "SKIP",
+            },
+            {
+                "context": "用户要求逐条核对生产事故报告。",
+                "reason": "正式任务需要严谨处理。",
+                "expected_action": "SKIP",
+            },
+            {
+                "context": "用户只是在询问一个简单的普通问题。",
+                "reason": "缺少信息过载和共同语境。",
+                "expected_action": "SKIP",
+            },
+        ],
+    }
+
+    def completion(messages: list[dict[str, str]], config: dict[str, object]) -> str:
+        stages.append("semantic")
+        model_messages.extend(messages)
+        return json.dumps(draft, ensure_ascii=False)
+
+    result = run_manual_intake(
+        ["无量空处"],
+        {
+            "output_root": "out/manual-test",
+            "web_research": {
+                "enabled": True,
+                "sources": ["so_qa"],
+                "max_results_per_item": 8,
+            },
+            "semantic_enrichment": {
+                "enabled": True,
+                "required": True,
+                "base_url": "https://example.test/v1",
+                "model": "test-model",
+                "require_web_research": True,
+                "allow_aliases": False,
+            },
+        },
+        repo_root=tmp_path,
+        research_fetchers={"so_qa": search},
+        completion=completion,
+    )
+
+    assert stages == ["research", "semantic"]
+    assert "https://example.test/meme-guide" in model_messages[-1]["content"]
+    assert result["pipeline_status"] == "pending_human_review"
+    assert result["meme_candidate_count"] == 1
+    assert Path(result["pending_review_file"]).is_file()
+    assert Path(result["review_page"]).is_file()
+    assert "人工输入 · 待审" in Path(result["review_page"]).read_text(encoding="utf-8")
+    assert (Path(result["run_dir"]) / "research.pending-semantic.json").is_file()
+    saved = json.loads(Path(result["pending_review_file"]).read_text(encoding="utf-8"))
+    assert saved["pipeline"] == "manual_meme_name_intake"
+    assert saved["candidates"][0]["semantic_enrichment"]["status"] == "pending_human_review"
 
 
 def test_semantic_enricher_builds_specific_communicative_intent(tmp_path: Path) -> None:

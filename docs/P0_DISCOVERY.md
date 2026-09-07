@@ -80,6 +80,32 @@ runs/<UTC 时间>/
 
 候选不会与现有库存做语义去重，也不会自动合并别名或 usage route。不同批次生成重复梗卡是允许的；运行时只要求 `card_id` 唯一，并由每张卡自己的使用场景、交流意图和硬禁用条件决定是否可用。
 
+## 人工输入梗名
+
+已知梗名不必伪造成弹幕证据，可以从独立脚本直接接入同一套“互联网检索 → LLM 语义梗卡 → 本地人工审核”流程：
+
+```bash
+export CHIBA_MODEL_CONFIG_PATH='/受控环境中的/chiba/config/model_config.toml'
+python3 scripts/build_meme_card_from_name.py \
+  --name '无量空处' \
+  --name '第二个待查梗名'
+```
+
+也可以继续使用 `MEME_DISCOVERY_LLM_BASE_URL`、`MEME_DISCOVERY_LLM_MODEL` 和 `MEME_DISCOVERY_LLM_API_KEY` 注入 OpenAI 兼容模型。脚本复用 `ops/p0_discovery.example.json` 中的搜索源和语义配置；需要覆盖时传 `--config`，需要沿用其他本地归档根目录时传 `--output-root`。
+
+每个 `--name` 都是独立候选，不查询现有库存、不去重、不合并别名；即使同名输入两次，也会保留两个不同的 `candidate_id`。人工入口只跳过直播/视频采集、黑名单和重复表达挖掘，不跳过互联网检索、模型结构校验和人工审核。默认输出为：
+
+```text
+out/p0-meme-discovery/
+  latest-manual-run.json
+  manual-runs/<UTC 时间>/
+    research.pending-semantic.json
+    meme-cards.pending-review.json
+    review-queue.html
+```
+
+`research.pending-semantic.json` 会在模型调用前落盘，模型暂时失败时仍可检查本轮搜索效果；只有 `meme-cards.pending-review.json` 中 `semantic_enrichment.status=pending_human_review` 的草稿才算完成语义生成。两类文件都不能直接发布。
+
 语义模型会收到候选短语、脱敏后的代表性社区文本、内容标题和邻近弹幕，不会收到评论者/观众身份字段。接入模型前仍需确认所选提供方的数据处理与保留政策允许这类公开社区语料；不满足时应保持任务失败，而不是切回无语义模板。
 
 ## 接入授权直播导出
