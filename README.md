@@ -86,3 +86,7 @@ resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1/
 服务器的 `/opt/.../current` 不是 Git checkout；指纹工具会自动读取同级 `shared/deployed-revision`。也可以用 `--chiba-revision <完整 commit>` 显式指定，但不能省略 revision。
 
 长期找新梗、更新梗和让老梗退环境的流程见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
+
+## P0 离线候选发现
+
+公开社区语料的低频采集、授权直播导入、14 天滚动证据仓和本地人工审核队列见 [docs/P0_DISCOVERY.md](docs/P0_DISCOVERY.md)。候选发现与运行时 Release 完全分离；脚本不会自动发布任何梗卡。

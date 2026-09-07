@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "inventory_decay": {
+    "default_half_life_days": 45,
+    "half_life_days_by_age_class": {
+      "breaking": 14,
+      "current_observed": 45,
+      "seasonal": 120,
+      "evergreen": 365
+    },
+    "minimum_age_days": 21,
+    "review_below_weight": 0.45,
+    "auto_apply": false,
+    "human_actions": ["KEEP", "DOWNRANK", "RETIRE"]
+  },
+  "rejected_rereview": {
+    "cooldown_days": 30,
+    "sample_size": 20,
+    "selection": "deterministic_random_by_queue_date",
+    "auto_apply": false,
+    "human_actions": ["KEEP_REJECTED", "RESTORE_AS_MEME", "RESTORE_AS_CATCHPHRASE"]
+  }
+}
