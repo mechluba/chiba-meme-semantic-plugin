@@ -89,4 +89,4 @@ resources/releases/reviewed-semantic-meme-library-20260904-v1/
 
 ## P0 离线候选发现
 
-公开社区语料的低频采集、授权直播导入、14 天滚动证据仓和本地人工审核队列见 [docs/P0_DISCOVERY.md](docs/P0_DISCOVERY.md)。候选发现与运行时 Release 完全分离；脚本不会自动发布任何梗卡。
+命令、模型配置、人工输入梗名和输出文件说明见 [docs/MEME_DISCOVERY_USAGE.md](docs/MEME_DISCOVERY_USAGE.md)。公开社区语料的低频采集、授权直播导入、14 天滚动证据仓和来源边界见 [docs/P0_DISCOVERY.md](docs/P0_DISCOVERY.md)。候选发现与运行时 Release 完全分离；脚本不会自动发布任何梗卡。

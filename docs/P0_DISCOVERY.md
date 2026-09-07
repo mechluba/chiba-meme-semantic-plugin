@@ -2,6 +2,8 @@
 
 这条流水线每天从可访问的 P0 来源抓取一小批公开文本，做脱敏标准化和重复表达聚合，最后只生成本地 `pending` 待审文件。它不修改 `resources/releases/`，也不会把任何候选自动接入 Planner 或 Replyer。
 
+实际运行命令、模型配置、人工梗名入口、输出说明和常见故障处理统一见 [热梗发现与人工梗名接入使用手册](MEME_DISCOVERY_USAGE.md)。本文保留来源、数据和语义流程的设计边界。
+
 ## 当前来源边界
 
 | 来源 | 当前能力 | 说明 |
@@ -105,6 +107,8 @@ out/p0-meme-discovery/
 ```
 
 `research.pending-semantic.json` 会在模型调用前落盘，模型暂时失败时仍可检查本轮搜索效果；只有 `meme-cards.pending-review.json` 中 `semantic_enrichment.status=pending_human_review` 的草稿才算完成语义生成。两类文件都不能直接发布。
+
+完整参数、模型配置和故障处理见 [使用手册](MEME_DISCOVERY_USAGE.md)。
 
 语义模型会收到候选短语、脱敏后的代表性社区文本、内容标题和邻近弹幕，不会收到评论者/观众身份字段。接入模型前仍需确认所选提供方的数据处理与保留政策允许这类公开社区语料；不满足时应保持任务失败，而不是切回无语义模板。
 
