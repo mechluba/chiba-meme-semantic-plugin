@@ -87,7 +87,8 @@ def mine_candidates(evidence: list[dict[str, Any]], config: dict[str, Any]) -> l
                 "candidate_kind": "surface_repetition_signal",
                 "phrase": phrase,
                 "normalized_expression": normalized,
-                "aliases": [variant for variant, _ in variants.most_common(10)],
+                # 每个候选独立生成梗卡，不把相近写法自动合并为别名。
+                "aliases": [],
                 "signals": {
                     "message_count": len(items),
                     "distinct_content_count": len(content_ids),

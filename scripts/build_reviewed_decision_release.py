@@ -84,11 +84,6 @@ def _normalize_semantic_core(value: Any) -> str:
     return "；".join(parts) + "。"
 
 
-def _expression_terms(card: Mapping[str, Any]) -> set[str]:
-    values = [card.get("canonical_expression"), *(card.get("aliases") or [])]
-    return {str(value).strip() for value in values if str(value).strip()}
-
-
 def _apply_decision(
     *, card: dict[str, Any], decision: str, note: str, reviewed_at: str
 ) -> dict[str, Any]:
@@ -185,30 +180,14 @@ def build_reviewed_library(
         if decision == "approve_understand":
             understand_only_ids.append(expected_card_id)
 
-    new_terms: set[str] = set()
-    for card in approved_cards:
-        overlap = new_terms & _expression_terms(card)
-        if overlap:
-            raise ValueError(f"新增梗卡存在表达冲突: {sorted(overlap)}")
-        new_terms.update(_expression_terms(card))
-
     base_cards = base_library.get("cards")
     if not isinstance(base_cards, list) or not base_cards:
         raise ValueError("基础梗包没有 cards")
-    retained_base_cards = [
-        deepcopy(card)
-        for card in base_cards
-        if not (_expression_terms(card) & new_terms)
-    ]
-    superseded_count = len(base_cards) - len(retained_base_cards)
-    cards = [*retained_base_cards, *approved_cards]
+    cards = [*(deepcopy(card) for card in base_cards), *approved_cards]
 
     card_ids = [str(card.get("card_id")) for card in cards]
-    canonicals = [str(card.get("canonical_expression")) for card in cards]
     if len(card_ids) != len(set(card_ids)):
         raise ValueError("合并后 card_id 不唯一")
-    if len(canonicals) != len(set(canonicals)):
-        raise ValueError("合并后 canonical_expression 不唯一")
     if any(card.get("human_review", {}).get("status") != "approved" for card in cards):
         raise ValueError("合并后存在未经批准的梗卡")
 
@@ -231,7 +210,7 @@ def build_reviewed_library(
         "new_use_count": decision_counts["approve_use"],
         "new_understand_only_count": decision_counts["approve_understand"],
         "new_rejected_count": decision_counts["reject"],
-        "superseded_base_count": superseded_count,
+        "superseded_base_count": 0,
         "all_cards_reviewed": True,
     }
     summary = {
@@ -242,7 +221,7 @@ def build_reviewed_library(
         "new_use_count": decision_counts["approve_use"],
         "new_understand_only_count": decision_counts["approve_understand"],
         "new_rejected_count": decision_counts["reject"],
-        "superseded_base_count": superseded_count,
+        "superseded_base_count": 0,
         "understand_only_card_ids": understand_only_ids,
     }
     return library, summary

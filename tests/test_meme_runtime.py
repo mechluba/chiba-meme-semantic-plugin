@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from shutil import copytree
+from copy import deepcopy
 
 import json
 
@@ -86,6 +87,21 @@ def test_release_rejects_tampered_reviewed_library(tmp_path: Path) -> None:
     )
     with pytest.raises(MemeReleaseError, match="哈希不一致"):
         MemeRelease.load(copied)
+
+
+def test_release_allows_duplicate_canonical_expressions_with_unique_card_ids(
+    release: MemeRelease,
+) -> None:
+    library = deepcopy(release.library)
+    library["cards"][1]["canonical_expression"] = library["cards"][0]["canonical_expression"]
+
+    MemeRelease._validate_payloads(
+        release_id=release.release_id,
+        manifest=release.release_manifest,
+        library=library,
+        vector_index=release.vector_index,
+        vectors=release.vectors,
+    )
 
 
 def test_vector_retrieval_returns_exact_route_first(release: MemeRelease) -> None:

@@ -36,6 +36,7 @@ from meme_discovery.reviewed_card_review import (
     validate_storage_cards,
 )
 from meme_discovery.web_research import (
+    research_candidates,
     research_reviewed_groups,
     search_gengwh,
     search_so_question,
@@ -362,6 +363,7 @@ def test_miner_only_creates_pending_review_signal() -> None:
     assert len(candidates) == 1
     assert candidates[0]["review"]["status"] == "pending"
     assert candidates[0]["candidate_kind"] == "surface_repetition_signal"
+    assert candidates[0]["aliases"] == []
     assert candidates[0]["draft_card"]["semantic_core"] is None
     assert candidates[0]["signals"]["distinct_content_count"] == 2
     assert candidates[0]["draft_card"]["usage_routes"] == []
@@ -512,6 +514,54 @@ def test_pipeline_writes_local_review_artifacts_without_user_fields(tmp_path: Pa
     assert second["new_evidence_count"] == 0
     assert second["rolling_evidence_count"] == 3
     assert second["candidate_count"] == 1
+
+
+def test_pipeline_researches_candidates_before_semantic_enrichment(tmp_path: Path, monkeypatch) -> None:
+    candidate = _semantic_candidate()
+    stages: list[str] = []
+    monkeypatch.setattr(
+        pipeline,
+        "collect_bilibili",
+        lambda config, client: ([], {"source": "bilibili_public_web", "status": "no_evidence"}),
+    )
+    monkeypatch.setattr(
+        pipeline,
+        "collect_jsonl_inbox",
+        lambda config, repo_root: ([], {"source": "authorized_jsonl_inbox", "status": "no_evidence"}),
+    )
+    monkeypatch.setattr(
+        pipeline,
+        "check_room_anchors",
+        lambda config, client: {"source": "live_room_anchors", "rooms": []},
+    )
+    monkeypatch.setattr(pipeline, "filter_review_evidence", lambda evidence, config: ([], {"excluded_count": 0}))
+    monkeypatch.setattr(pipeline, "mine_candidates", lambda evidence, config: [candidate])
+
+    def fake_research(candidates, config, *, cache_dir):
+        stages.append("research")
+        candidates[0]["web_research"] = {
+            "status": "single_web_source",
+            "result_count": 1,
+            "results": [{"url": "https://example.test/guide"}],
+        }
+        return candidates, {"status": "ok", "selected_count": 1}
+
+    def fake_enrich(candidates, config, *, cache_dir):
+        stages.append("semantic")
+        assert candidates[0]["web_research"]["result_count"] == 1
+        return candidates, {"status": "disabled", "enriched_count": 0}
+
+    monkeypatch.setattr(pipeline, "research_candidates", fake_research)
+    monkeypatch.setattr(pipeline, "enrich_candidates", fake_enrich)
+
+    result = pipeline.run_discovery(
+        {"output_root": "out/discovery", "semantic_enrichment": {"enabled": False}},
+        repo_root=tmp_path,
+    )
+
+    assert stages == ["research", "semantic"]
+    assert result["web_researched_candidate_count"] == 1
+    assert result["pipeline_status"] == "awaiting_semantic_enrichment"
 
 
 def test_evidence_redacts_explicit_mentions() -> None:
@@ -1079,6 +1129,58 @@ def test_web_research_combines_encyclopedia_and_recent_usage(tmp_path: Path) -> 
     assert research["status"] == "origin_and_current_usage"
     assert research["freshness"]["class"] == "recent_90d"
     assert research["provider_count"] == 2
+
+
+def test_candidate_research_runs_before_semantic_input_without_aliases(tmp_path: Path) -> None:
+    candidate = _semantic_candidate()
+    result = {
+        "source_id": "web-guide",
+        "provider": "so_qa",
+        "source_kind": "question_search_result",
+        "source_tier": "indexed_web",
+        "title": "无量空处是什么梗",
+        "url": "https://example.test/guide",
+        "snippet": "用于夸张表达信息过载、脑子宕机。",
+        "published_at": "2026-09-01T00:00:00+00:00",
+        "match_quality": "title_exact",
+        "relevance_score": 1.0,
+    }
+    candidates, report = research_candidates(
+        [candidate],
+        {"enabled": True, "sources": ["so_qa"], "max_candidates_per_run": 1},
+        cache_dir=tmp_path / "research-cache",
+        fetchers={"so_qa": lambda query: [result]},
+    )
+    captured: list[list[dict[str, str]]] = []
+    ordinary = {
+        "classification": "ordinary_expression",
+        "classification_reason": "测试只验证联网材料先进入语义模型输入。",
+        "semantic_core": "测试表达",
+        "culture_scope": "中文互联网",
+        "usage_routes": [],
+    }
+
+    enrich_candidates(
+        candidates,
+        {
+            "enabled": True,
+            "required": True,
+            "base_url": "https://example.test/v1",
+            "model": "test-model",
+            "require_web_research": True,
+            "allow_aliases": False,
+        },
+        cache_dir=tmp_path / "semantic-cache",
+        completion=lambda messages, config: captured.append(messages) or json.dumps(ordinary, ensure_ascii=False),
+    )
+
+    assert report["selected_count"] == 1
+    assert "在咒术回战视频弹幕中看到“无量空处”是什么意思，是什么梗" in json.dumps(
+        candidates[0]["web_research"], ensure_ascii=False
+    )
+    prompt = captured[0][-1]["content"]
+    assert "https://example.test/guide" in prompt
+    assert '"allowed_realizations": [\n    "无量空处"\n  ]' in prompt
 
 
 def test_gengwh_search_parser_keeps_short_public_excerpt() -> None:

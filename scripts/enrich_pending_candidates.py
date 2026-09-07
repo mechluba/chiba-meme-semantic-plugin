@@ -16,10 +16,6 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from meme_discovery.pipeline import _render_review_html  # noqa: E402
-from meme_discovery.semantic_calibrator import (  # noqa: E402
-    calibrate_candidates,
-    preflight_semantic_calibration,
-)
 from meme_discovery.semantic_enricher import enrich_candidates, preflight_semantic_enrichment  # noqa: E402
 
 
@@ -41,24 +37,20 @@ def main() -> int:
 
     document = _load_object(args.input.resolve())
     config = _load_object(args.config.resolve()).get("semantic_enrichment") or {}
-    calibration_config = config.get("embedding_calibration") or {}
     preflight_semantic_enrichment(config)
-    preflight_semantic_calibration(calibration_config)
 
     candidates, semantic_report = enrich_candidates(
         document.get("candidates") or [],
         config,
         cache_dir=args.cache_dir.resolve(),
     )
-    calibration_report = calibrate_candidates(candidates, calibration_config)
     document["candidates"] = candidates
     document["semantic_enrichment_report"] = semantic_report
-    document["semantic_calibration_report"] = calibration_report
     document.setdefault("semantic_policy", {}).update(
         {
             "occurrence_context_is_usage_route": False,
             "auto_publish": False,
-            "note": "文本模型提炼交流意图，向量模型只校准旧卡近邻；两者均待人工审核。",
+            "note": "文本模型基于联网检索和出现语境提炼交流意图；结果仍待人工审核。",
         }
     )
     summary = document.setdefault("summary", {})
@@ -86,7 +78,6 @@ def main() -> int:
                 "review_page": str(review_page),
                 "summary": summary,
                 "semantic_enrichment_report": semantic_report,
-                "semantic_calibration_report": calibration_report,
             },
             ensure_ascii=False,
             indent=2,

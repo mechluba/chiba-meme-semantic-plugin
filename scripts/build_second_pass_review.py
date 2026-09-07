@@ -9,7 +9,6 @@ from typing import Any
 
 import argparse
 import hashlib
-import html
 import json
 
 

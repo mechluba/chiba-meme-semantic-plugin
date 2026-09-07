@@ -5,13 +5,14 @@ from pathlib import Path
 from typing import Any
 
 import json
+import os
 import shutil
 import subprocess
 import sys
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
-CHIBA_ROOT = PLUGIN_ROOT.parents[1]
+CHIBA_ROOT = Path(os.environ.get("CHIBA_TEST_ROOT") or PLUGIN_ROOT.parents[1]).resolve()
 SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "runtime_fingerprint.py"
 DIFF_SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "diff_runtime_fingerprints.py"
 RELEASE_ID = "reviewed-semantic-meme-library-20260904-v1"

@@ -42,7 +42,7 @@ export MEME_DISCOVERY_LLM_API_KEY='从本地密钥管理器注入，不写进配
 python3 scripts/run_p0_discovery.py --config ops/p0_discovery.local.json
 ```
 
-如果采集机没有合法注入模型密钥，可显式使用 `--collection-only`。它仍会抓取、去重、滚动保留并生成表层重复信号，但所有候选都标记为语义未运行，不能拿给千叶做使用决策；后续必须在持有受控模型凭据的环境用 `scripts/enrich_pending_candidates.py` 补齐交流意图。
+如果采集机暂时没有合法注入模型密钥，可显式使用 `--collection-only`。它仍会完成采集、黑名单清洗、候选聚合和互联网检索，但候选会标记为 `awaiting_semantic_enrichment`，不能拿给千叶做使用决策。凭据恢复后用 `--resume-latest` 对最近一次结果补跑语义模型，不重复采集或搜索。
 
 输出在被 Git 忽略的 `out/p0-meme-discovery/`：
 
@@ -61,7 +61,9 @@ runs/<UTC 时间>/
 
 每个候选先生成 `occurrence_contexts`：按圈层与弹幕、评论或授权直播来源聚合，统计证据数和独立内容数，并展示代表性来源。弹幕证据附带默认前后 6 秒内的邻近弹幕。这个字段只回答“它出现在哪里、前后发生了什么”，**不能**作为千叶的使用场景。
 
-随后，必需的语义模型阶段将证据提炼到 `draft_card`：
+候选聚合后先按直播间或视频圈层生成完整问句，例如“在玩机器直播间弹幕中看到‘XX’是什么意思，是什么梗”，并同时查询梗百科、B站和通用搜索结果。检索结果会保存标题、短摘要、链接、日期和来源层级。搜索只提供可核查材料，不能直接认定某个表达是梗。
+
+随后，必需的语义模型阶段同时读取弹幕上下文和互联网检索材料，将证据提炼到 `draft_card`：
 
 - `semantic_core`：表达在互动中的核心含义；
 - `usage_routes[].when`：什么对话事件或用户状态下可能适用；
@@ -76,9 +78,7 @@ runs/<UTC 时间>/
 
 示例配置把语义提炼设为 `enabled=true, required=true`。可通过 `chiba_model_config_path` 和 `chiba_text_task=utils` 只读复用 Chiba 的任务、模型与 Provider 配置；适合让任务与 Chiba 部署在同一受控环境中运行，密钥不需要复制到候选文件或审核报告。没有共址配置时，也可继续通过 `MEME_DISCOVERY_LLM_*` 环境变量注入 OpenAI 兼容模型。缺少任一必需配置时任务会在发起采集前失败，不会继续生成看似完整但无法用于决策的通用模板。模型响应按输入证据哈希缓存，避免定时任务重复付费。
 
-启用 `embedding_calibration` 后，流水线会用 Chiba 的 `embedding` 任务为每条合法 usage route 生成向量，并和已审核 Release 的多原型向量比较。审核页会展示最接近的旧梗卡、route 和相似度，用来判断“已有卡别名 / 已有卡新路线 / 可能是新梗”。相似度没有自动合并权限，也不会改变 `pending_human_review` 状态；配置的模型名称和向量维度必须与目标 Release 一致。通用示例默认关闭这一可选阶段；与 Chiba 共址运行并填好模型配置路径后再开启。
-
-如果采集和模型调用需要分开运行，可以先生成关闭语义阶段的候选文件，再用 `scripts/enrich_pending_candidates.py` 在持有 Chiba 模型配置的受控环境中另存语义 JSON 与审核页。该脚本不覆盖输入文件，也不发布 Release。
+候选不会与现有库存做语义去重，也不会自动合并别名或 usage route。不同批次生成重复梗卡是允许的；运行时只要求 `card_id` 唯一，并由每张卡自己的使用场景、交流意图和硬禁用条件决定是否可用。
 
 语义模型会收到候选短语、脱敏后的代表性社区文本、内容标题和邻近弹幕，不会收到评论者/观众身份字段。接入模型前仍需确认所选提供方的数据处理与保留政策允许这类公开社区语料；不满足时应保持任务失败，而不是切回无语义模板。
 
@@ -98,6 +98,6 @@ runs/<UTC 时间>/
 
 ## 人工审核后的下一步
 
-审核人应逐条核对语义核心、交流意图、必需信号、受众条件、反例和风险，并明确选择 `USE`、`UNDERSTAND_ONLY` 或 `REJECT`。通过审核的内容仍需按 [MAINTENANCE.md](MAINTENANCE.md) 新建不可变 Release、离线回放和测试环境验收，不能直接复制待审 JSON 到线上梗包。
+审核人应逐条核对联网来源、语义核心、交流意图、必需信号、受众条件、反例和风险，并明确选择 `USE`、`UNDERSTAND_ONLY` 或 `REJECT`。通过审核的内容仍需按 [MAINTENANCE.md](MAINTENANCE.md) 新建不可变 Release、离线回放和测试环境验收，不能直接复制待审 JSON 到线上梗包。
 
-梗、口癖、普通表达和噪音的定义，别称/谐音合并规则，以及库存降权与淘汰项冷却复审机制见 [meme-discovery-governance.md](meme-discovery-governance.md)。生命周期程序只生成待审建议，不会自动修改运行时梗库。
+梗、口癖、普通表达和噪音的定义，以及库存降权与淘汰项冷却复审机制见 [meme-discovery-governance.md](meme-discovery-governance.md)。生命周期程序只生成待审建议，不会自动修改运行时梗库。

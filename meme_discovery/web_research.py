@@ -179,7 +179,8 @@ def research_reviewed_groups(
             item["web_research"] = future.result()
             completed += 1
             print(
-                f"[{completed}/{len(items)}] research {item.get('canonical_expression')}: "
+                f"[{completed}/{len(items)}] research "
+                f"{item.get('canonical_expression') or item.get('phrase')}: "
                 f"{item['web_research']['status']} / {item['web_research']['result_count']}",
                 flush=True,
             )
@@ -202,6 +203,66 @@ def research_reviewed_groups(
         "result_count": sum((item.get("web_research") or {}).get("result_count", 0) for item in items),
     }
     return document
+
+
+def research_candidates(
+    candidates: list[dict[str, Any]],
+    config: dict[str, Any],
+    *,
+    cache_dir: Path,
+    fetchers: dict[str, Callable[[str], list[dict[str, Any]]]] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """在语义提炼前检索候选表达；超出预算的候选留待后续批次。"""
+    if not config.get("enabled", False):
+        for candidate in candidates:
+            candidate["web_research"] = {
+                "status": "disabled",
+                "research_version": RESEARCH_VERSION,
+                "result_count": 0,
+                "results": [],
+                "errors": [],
+            }
+        return candidates, {
+            "status": "disabled",
+            "research_version": RESEARCH_VERSION,
+            "candidate_count": len(candidates),
+            "selected_count": 0,
+            "result_count": 0,
+        }
+
+    maximum_candidates = max(0, int(config.get("max_candidates_per_run", 0)))
+    selected_count = (
+        len(candidates)
+        if maximum_candidates <= 0
+        else min(maximum_candidates, len(candidates))
+    )
+    selected = candidates[:selected_count]
+    for candidate in candidates[selected_count:]:
+        candidate["web_research"] = {
+            "status": "deferred",
+            "reason": "max_candidates_per_run",
+            "research_version": RESEARCH_VERSION,
+            "result_count": 0,
+            "results": [],
+            "errors": [],
+        }
+
+    document = {"items": selected}
+    research_reviewed_groups(
+        document,
+        config,
+        cache_dir=cache_dir,
+        fetchers=fetchers,
+    )
+    report = dict(document["web_research_report"])
+    report.update(
+        {
+            "candidate_count": len(candidates),
+            "selected_count": selected_count,
+            "deferred_count": len(candidates) - selected_count,
+        }
+    )
+    return candidates, report
 
 
 def search_gengwh(client: RateLimitedResearchClient, expression: str) -> list[dict[str, Any]]:
@@ -545,7 +606,7 @@ def _freshness(results: list[dict[str, Any]], retrieved_at: str) -> dict[str, An
 
 
 def _search_expressions(item: dict[str, Any]) -> list[str]:
-    canonical = str(item.get("canonical_expression") or "").strip()
+    canonical = str(item.get("canonical_expression") or item.get("phrase") or "").strip()
     aliases = [str(value).strip() for value in item.get("aliases") or [] if str(value).strip()]
     values = [canonical, *aliases]
     if " / " in canonical and aliases:
@@ -560,10 +621,23 @@ def _source_query(source: str, expression: str, item: dict[str, Any]) -> str:
         return expression
     rooms = (item.get("signals") or {}).get("live_rooms") or []
     circles = (item.get("signals") or {}).get("top_circles") or []
+    occurrence_contexts = item.get("occurrence_contexts") or []
     if rooms and rooms[0].get("name"):
         context = f"在{rooms[0]['name']}直播间弹幕中"
     elif circles and circles[0].get("name"):
         context = f"在{circles[0]['name']}视频弹幕中"
+    elif occurrence_contexts:
+        first = occurrence_contexts[0]
+        representative = first.get("representative_contexts") or []
+        title = str(representative[0].get("content_title") or "").strip() if representative else ""
+        source_kind = str(first.get("source_kind") or "")
+        circle = str(first.get("circle") or "").strip()
+        if title and source_kind in {"public_live_sample", "authorized_live_export"}:
+            context = f"在{title}直播间弹幕中"
+        elif circle:
+            context = f"在{circle}视频弹幕中"
+        else:
+            context = "在视频弹幕中"
     else:
         context = "在视频弹幕中"
     return f"{context}看到“{expression}”是什么意思，是什么梗"

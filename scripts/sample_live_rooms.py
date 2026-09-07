@@ -35,8 +35,15 @@ def main() -> int:
         default=REPO_ROOT / "ops" / "live_sampling.example.json",
         help="直播抽样 JSON 配置",
     )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        help="覆盖配置中的输出目录；用于切换代码 worktree 时继续使用原有本地归档",
+    )
     args = parser.parse_args()
     config = _load_config(args.config.expanduser().resolve())
+    if args.output_root:
+        config["output_root"] = str(args.output_root.expanduser().resolve())
     output_root = Path(os.path.expandvars(str(config.get("output_root") or "out/p0-meme-discovery"))).expanduser()
     if not output_root.is_absolute():
         output_root = REPO_ROOT / output_root

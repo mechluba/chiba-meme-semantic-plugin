@@ -3,6 +3,6 @@
 这里的输出只用于人工审核，不会修改或发布运行时梗包。
 """
 
-from .pipeline import run_discovery
+from .pipeline import resume_latest_semantic_enrichment, run_discovery
 
-__all__ = ["run_discovery"]
+__all__ = ["resume_latest_semantic_enrichment", "run_discovery"]

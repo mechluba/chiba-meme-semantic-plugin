@@ -36,6 +36,16 @@
     "minimum_interval_seconds": 0.6,
     "max_retries": 2
   },
+  "web_research": {
+    "enabled": true,
+    "sources": ["gengwh", "moyu", "bilibili", "bing", "so_qa"],
+    "workers": 4,
+    "timeout_seconds": 20,
+    "minimum_interval_seconds": 0.65,
+    "max_retries": 2,
+    "max_candidates_per_run": 24,
+    "max_results_per_item": 8
+  },
   "semantic_enrichment": {
     "enabled": true,
     "required": true,
@@ -51,18 +61,12 @@
     "minimum_interval_seconds": 0.5,
     "response_format_json": true,
     "validation_repair_attempts": 1,
-    "max_candidates_per_run": 40,
+    "max_candidates_per_run": 24,
     "max_occurrence_scopes": 3,
     "max_contexts_per_scope": 3,
-    "embedding_calibration": {
-      "enabled": false,
-      "required": true,
-      "chiba_model_config_path": "",
-      "chiba_embedding_task": "embedding",
-      "release_dir": "resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1",
-      "top_k": 4,
-      "minimum_interval_seconds": 0.2
-    }
+    "max_web_results": 8,
+    "require_web_research": true,
+    "allow_aliases": false
   },
   "sources": {
     "bilibili": {

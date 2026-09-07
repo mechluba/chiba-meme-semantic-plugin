@@ -17,8 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from meme_discovery import run_discovery  # noqa: E402
-from meme_discovery.semantic_calibrator import SemanticCalibrationError  # noqa: E402
+from meme_discovery import resume_latest_semantic_enrichment, run_discovery  # noqa: E402
 from meme_discovery.semantic_enricher import SemanticEnrichmentError  # noqa: E402
 
 
@@ -42,11 +41,29 @@ def main() -> int:
     parser.add_argument(
         "--collection-only",
         action="store_true",
-        help="只采集、聚合并生成表层待审信号；显式标记语义未运行，不调用在线模型",
+        help="采集、清洗、候选聚合并完成联网检索；显式标记语义待补跑，不调用在线模型",
+    )
+    parser.add_argument(
+        "--resume-latest",
+        action="store_true",
+        help="不重新采集，为最近一次已完成联网检索的候选补跑语义模型",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        help="覆盖配置中的输出目录；用于切换代码 worktree 时继续使用原有本地归档",
     )
     args = parser.parse_args()
+    if args.collection_only and args.resume_latest:
+        parser.error("--collection-only 和 --resume-latest 不能同时使用")
     config_path = args.config.expanduser().resolve()
     config = _load_config(config_path)
+    if args.output_root:
+        configured_output = args.output_root.expanduser().resolve()
+        config["output_root"] = str(configured_output)
+        config.setdefault("sources", {}).setdefault("jsonl_inbox", {})["path"] = str(
+            configured_output / "inbox"
+        )
     if args.collection_only:
         config["semantic_enrichment"] = {"enabled": False, "required": False}
     output_root = Path(os.path.expandvars(str(config.get("output_root") or "out/p0-meme-discovery")))
@@ -61,8 +78,12 @@ def main() -> int:
             print("已有热梗发现任务正在运行，本次跳过。", file=sys.stderr)
             return 3
         try:
-            result = run_discovery(config, repo_root=REPO_ROOT)
-        except (SemanticEnrichmentError, SemanticCalibrationError) as exc:
+            result = (
+                resume_latest_semantic_enrichment(config, repo_root=REPO_ROOT)
+                if args.resume_latest
+                else run_discovery(config, repo_root=REPO_ROOT)
+            )
+        except SemanticEnrichmentError as exc:
             print(f"语义流程失败：{exc}", file=sys.stderr)
             return 4
     print(json.dumps(result, ensure_ascii=False, indent=2))

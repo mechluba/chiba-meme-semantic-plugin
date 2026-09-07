@@ -25,8 +25,8 @@ from .bilibili import (
 )
 from .evidence_filter import filter_review_evidence
 from .miner import mine_candidates
-from .semantic_calibrator import calibrate_candidates, preflight_semantic_calibration
-from .semantic_enricher import enrich_candidates, preflight_semantic_enrichment
+from .semantic_enricher import SemanticEnrichmentError, enrich_candidates, preflight_semantic_enrichment
+from .web_research import research_candidates
 
 
 def _utc_now() -> datetime:
@@ -297,14 +297,6 @@ def collect_jsonl_inbox(config: dict[str, Any], repo_root: Path) -> tuple[list[d
 def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
     semantic_config = config.get("semantic_enrichment") or {}
     preflight_semantic_enrichment(semantic_config)
-    calibration_config = (
-        dict(semantic_config.get("embedding_calibration") or {}) if semantic_config.get("enabled") else {}
-    )
-    if calibration_config.get("release_dir"):
-        calibration_config["release_dir"] = str(
-            _resolve_path(repo_root, str(calibration_config["release_dir"]))
-        )
-    preflight_semantic_calibration(calibration_config)
     output_root = _resolve_path(repo_root, str(config.get("output_root") or "out/p0-meme-discovery"))
     run_at = _utc_now()
     run_id = run_at.strftime("%Y%m%dT%H%M%SZ")
@@ -355,13 +347,22 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
     )
     candidates = mine_candidates(review_evidence, config.get("mining") or {})
     occurrence_context_count = sum(len(candidate["occurrence_contexts"]) for candidate in candidates)
+    candidates, web_research_report = research_candidates(
+        candidates,
+        config.get("web_research") or {},
+        cache_dir=output_root / "web-research-cache",
+    )
     candidates, semantic_report = enrich_candidates(
         candidates,
         semantic_config,
         cache_dir=output_root / "semantic-cache",
     )
-    calibration_report = calibrate_candidates(candidates, calibration_config)
     usage_route_count = sum(len(candidate["draft_card"]["usage_routes"]) for candidate in candidates)
+    pipeline_status = (
+        "pending_human_review"
+        if semantic_report.get("status") in {"ok", "partial"}
+        else "awaiting_semantic_enrichment"
+    )
     candidate_document = {
         "schema_version": 1,
         "pipeline": "p0_meme_discovery_shadow",
@@ -379,7 +380,8 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
             "note": "出现位置只作为证据；只有通过模型结构校验的交流意图 route 才进入 draft_card，且仍需人工审核。",
         },
         "semantic_enrichment_report": semantic_report,
-        "semantic_calibration_report": calibration_report,
+        "web_research_report": web_research_report,
+        "pipeline_status": pipeline_status,
         "summary": {
             "fetched_evidence_count": len(fetched_evidence),
             "new_evidence_count": len(new_evidence),
@@ -413,11 +415,71 @@ def run_discovery(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
         "candidate_count": len(candidates),
         "occurrence_context_count": occurrence_context_count,
         "usage_route_count": usage_route_count,
+        "web_researched_candidate_count": web_research_report.get("selected_count", 0),
+        "pipeline_status": pipeline_status,
         "fetched_evidence_count": len(fetched_evidence),
         "new_evidence_count": len(new_evidence),
         "rolling_evidence_count": len(rolling_evidence),
     }
     _write_json(output_root / "latest-run.json", latest)
+    return latest
+
+
+def resume_latest_semantic_enrichment(config: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
+    """为最近一次已完成联网检索的采集结果补跑语义模型，不重复抓取来源。"""
+    output_root = _resolve_path(repo_root, str(config.get("output_root") or "out/p0-meme-discovery"))
+    latest_path = output_root / "latest-run.json"
+    if not latest_path.is_file():
+        raise SemanticEnrichmentError("没有可补跑语义模型的 latest-run.json")
+    latest = json.loads(latest_path.read_text(encoding="utf-8"))
+    pending_path = Path(str(latest.get("pending_review_file") or "")).resolve()
+    if not pending_path.is_file() or not pending_path.is_relative_to(output_root.resolve()):
+        raise SemanticEnrichmentError("最近一次候选文件不存在或越出输出目录")
+    document = json.loads(pending_path.read_text(encoding="utf-8"))
+    if document.get("pipeline_status") == "pending_human_review":
+        return latest
+
+    semantic_config = config.get("semantic_enrichment") or {}
+    if not semantic_config.get("enabled", False):
+        raise SemanticEnrichmentError("语义提炼未启用，不能补跑")
+    preflight_semantic_enrichment(semantic_config)
+    candidates, semantic_report = enrich_candidates(
+        document.get("candidates") or [],
+        semantic_config,
+        cache_dir=output_root / "semantic-cache",
+    )
+    usage_route_count = sum(
+        len((candidate.get("draft_card") or {}).get("usage_routes") or [])
+        for candidate in candidates
+    )
+    document["candidates"] = candidates
+    document["semantic_enrichment_report"] = semantic_report
+    document["pipeline_status"] = "pending_human_review"
+    document.setdefault("summary", {})["usage_route_count"] = usage_route_count
+    document["summary"]["semantically_enriched_candidate_count"] = sum(
+        (candidate.get("semantic_enrichment") or {}).get("status") == "pending_human_review"
+        for candidate in candidates
+    )
+    document["summary"]["meme_candidate_count"] = sum(
+        (candidate.get("draft_card") or {}).get("classification") == "meme_candidate"
+        for candidate in candidates
+    )
+    _write_json(pending_path, document)
+    review_page = Path(str(latest.get("review_page") or "")).resolve()
+    if not review_page.is_relative_to(output_root.resolve()):
+        raise SemanticEnrichmentError("最近一次审核页越出输出目录")
+    review_page.write_text(_render_review_html(document), encoding="utf-8")
+    latest.update(
+        {
+            "pipeline_status": "pending_human_review",
+            "usage_route_count": usage_route_count,
+            "semantically_enriched_candidate_count": document["summary"][
+                "semantically_enriched_candidate_count"
+            ],
+            "meme_candidate_count": document["summary"]["meme_candidate_count"],
+        }
+    )
+    _write_json(latest_path, latest)
     return latest
 
 
@@ -480,7 +542,7 @@ def _render_review_html(document: dict[str, Any]) -> str:
     compact_rows: list[str] = []
     candidates = sorted(document["candidates"], key=_review_priority)
     for candidate in candidates:
-        semantic = _render_semantic_draft_html(candidate)
+        semantic = _render_web_research_html(candidate) + _render_semantic_draft_html(candidate)
         signals = candidate["signals"]
         draft = candidate.get("draft_card") or {}
         enrichment = candidate.get("semantic_enrichment") or {}
@@ -526,6 +588,7 @@ p{{margin:5px 0}}ol,ul{{margin:5px 0;padding-left:22px}}details{{margin:5px 0}}
 .intent{{background:#f3f8fc;border-left:3px solid #2484c6;padding:7px 10px;margin:6px 0}}
 .intent b{{color:#333}}.policy{{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:6px}}
 .policy p{{margin:0}}small{{color:#777}}.warning{{background:#fff4d6;padding:7px 10px;margin-top:6px}}
+.research-result{{margin:5px 0;padding-left:9px;border-left:3px solid #d8dde5}}.research-result a{{color:#075b96;text-decoration:none}}
 .compact-group{{margin:12px 0;border-top:1px solid #ddd;padding-top:10px}}
 .compact-group>summary{{font-weight:650;cursor:pointer;color:#444}}
 .compact-group article{{padding:7px 11px;margin:5px 0}}.compact-group .decision{{margin-bottom:0}}
@@ -594,21 +657,27 @@ def _render_semantic_draft_html(candidate: dict[str, Any]) -> str:
     )
 
 
+def _render_web_research_html(candidate: dict[str, Any]) -> str:
+    research = candidate.get("web_research") or {}
+    status = html.escape(str(research.get("status") or "not_run"))
+    questions = "；".join(html.escape(str(item)) for item in research.get("question_queries") or [])
+    rows = "".join(
+        f'<div class="research-result"><a href="{html.escape(str(item.get("url") or ""))}" '
+        f'target="_blank" rel="noopener noreferrer">{html.escape(str(item.get("title") or item.get("url") or "来源"))}</a>'
+        f'<br><small>{html.escape(str(item.get("provider") or ""))}'
+        f'{" · " + html.escape(str(item.get("published_at"))) if item.get("published_at") else ""}</small>'
+        f'<p>{html.escape(str(item.get("snippet") or ""))}</p></div>'
+        for item in research.get("results") or []
+    )
+    return (
+        f"<details><summary>联网检索：{status} · {int(research.get('result_count') or 0)} 条</summary>"
+        f"<p><small>检索问句：{questions or '无'}</small></p>{rows or '<p>未找到可靠外部命中。</p>'}</details>"
+    )
+
+
 def _render_usage_route_html(route: dict[str, Any]) -> str:
     signals = "、".join(html.escape(str(item)) for item in route.get("required_context_signals", []))
     audience = "、".join(html.escape(str(item)) for item in route.get("audience_requirements", []))
-    calibration = route.get("semantic_calibration") or {}
-    nearest = "".join(
-        f"<li>{html.escape(str(item.get('canonical_expression')))} / "
-        f"{html.escape(str(item.get('route_tag')))} · {float(item.get('similarity') or 0):.3f}</li>"
-        for item in calibration.get("nearest_existing_routes", [])
-    )
-    calibration_html = (
-        f"<details><summary>与现有梗卡的向量近邻（{html.escape(str(calibration.get('similarity_band') or '待校准'))}）"
-        f"</summary><ul>{nearest}</ul><small>仅供人工判断合并/新增路线，不会自动合并。</small></details>"
-        if nearest
-        else ""
-    )
     return (
         f"<li class=\"intent\"><strong>{html.escape(str(route['route_tag']))}</strong>"
         f"<br><b>触发：</b>{html.escape(str(route['when']))}"
@@ -616,5 +685,5 @@ def _render_usage_route_html(route: dict[str, Any]) -> str:
         f"<br><b>作用：</b>{html.escape(str(route['response_function']))}"
         f"<br><b>信号：</b>{signals or '无'}"
         f"<br><b>受众：</b>{audience or '无'}"
-        f"<br><small>置信度 {route['confidence']}</small>{calibration_html}</li>"
+        f"<br><small>置信度 {route['confidence']}</small></li>"
     )
