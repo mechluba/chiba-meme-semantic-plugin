@@ -17,14 +17,14 @@
 ## 当前梗包
 
 ```text
-resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1/
+resources/releases/reviewed-semantic-meme-library-20260904-v1/
 ```
 
-- 27 张人工审核卡
-- 31 条使用路线
-- 155 个语义原型向量
+- 156 张人工审核卡
+- 356 条使用路线
+- 1780 个语义原型向量
 - 每条路线由使用场景、交流意图、正例和反例共同校准
-- 4 张高风险卡固定为 `UNDERSTAND_ONLY`
+- 59 张高风险卡固定为 `UNDERSTAND_ONLY`
 
 `release.json` 固定记录库、索引和向量文件的 SHA256。插件启动时逐项校验，不接受绝对路径、目录越界、未审核卡、错位索引或错误向量维度。
 

@@ -19,7 +19,10 @@ from chiba_meme_semantic_plugin.meme_runtime import (
     build_semantic_query_from_session_messages,
     extract_semantic_query_text,
 )
-from chiba_meme_semantic_plugin.plugin import DEFAULT_RELEASE_ID
+from chiba_meme_semantic_plugin.plugin import (
+    DEFAULT_RELEASE_ID,
+    DEFAULT_UNDERSTAND_ONLY_CARD_IDS,
+)
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
@@ -46,12 +49,28 @@ def test_release_loads_only_reviewed_cards_and_matches_fingerprint(
     assert fingerprint["release_id"] == DEFAULT_RELEASE_ID
     assert fingerprint["embedding_model"] == "volcengine-ark-embedding"
     assert fingerprint["dimension"] == 2048
-    assert fingerprint["card_count"] == 27
-    assert fingerprint["route_count"] == 31
-    assert fingerprint["vector_count"] == 155
+    assert fingerprint["card_count"] == 156
+    assert fingerprint["route_count"] == 356
+    assert fingerprint["vector_count"] == 1780
     assert all(
         card["human_review"]["status"] == "approved"
         for card in release.cards_by_id.values()
+    )
+
+
+def test_understand_only_policy_only_references_released_cards(
+    release: MemeRelease,
+) -> None:
+    understand_only_ids = set(DEFAULT_UNDERSTAND_ONLY_CARD_IDS)
+    assert len(understand_only_ids) == 59
+    assert understand_only_ids <= set(release.cards_by_id)
+    assert all(
+        all(
+            context["expected_action"] == "UNDERSTAND_ONLY"
+            for context in release.cards_by_id[card_id]["positive_contexts"]
+        )
+        for card_id in understand_only_ids
+        if card_id.startswith("reviewed-meme-")
     )
 
 

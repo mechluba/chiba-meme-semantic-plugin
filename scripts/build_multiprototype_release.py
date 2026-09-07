@@ -213,6 +213,9 @@ async def _build(
             json.dumps(release, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
+        # TemporaryDirectory 默认是 0700；release 会被服务账号直接读取，
+        # 原子替换前必须恢复为可遍历的发布目录权限。
+        temporary_dir.chmod(0o755)
         os.replace(temporary_dir, target_dir)
 
     return {

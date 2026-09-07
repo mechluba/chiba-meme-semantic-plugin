@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Chiba 语义梗库",
   "description": "使用向量召回和 Planner 语义决策，把审核后梗卡作为 Replyer 的一次性可选表达资源。",
   "author": {
