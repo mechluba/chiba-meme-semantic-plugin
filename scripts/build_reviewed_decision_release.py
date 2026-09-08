@@ -230,7 +230,12 @@ def build_reviewed_library(
 def _parse_args() -> Any:
     parser = ArgumentParser(description=__doc__)
     parser.add_argument("--base-release-id", required=True)
-    parser.add_argument("--review-decisions", action="append", required=True)
+    parser.add_argument(
+        "--review-decisions",
+        action="append",
+        required=True,
+        help="每日或语义卡审核页通过“导出审核记录”生成的 JSON；可重复传入多批",
+    )
     parser.add_argument("--target-release-id", required=True)
     parser.add_argument(
         "--prepare-only",

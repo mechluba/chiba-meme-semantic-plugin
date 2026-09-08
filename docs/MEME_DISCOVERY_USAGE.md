@@ -10,6 +10,7 @@
 | 已经知道梗名，直接补一张候选卡 | `scripts/build_meme_card_from_name.py` | 读取梗名 → 联网检索 → LLM 梗卡 |
 | 采集机暂时没有模型凭据 | `scripts/run_p0_discovery.py --collection-only` | 执行到联网检索并等待补跑，不生成可用语义卡 |
 | 给最近一次采集结果补跑模型 | `scripts/run_p0_discovery.py --resume-latest` | 读取最近一次搜索结果 → LLM 梗卡，不重复采集和搜索 |
+| 每天汇总前一天结果并通知审核人 | `scripts/build_daily_meme_review.py` | 汇总自动/人工语义结果 → 最终审核页 → 飞书机器人通知 |
 
 所有入口只生成本地待审核文件，不会修改 `resources/releases/`，也不会自动接入 Planner 或 Replyer。
 
@@ -77,6 +78,65 @@ out/p0-meme-discovery/
 - `latest-manual-run.json`：最近一次成功完成的人工接入结果位置。
 
 需要把输出归档到其他本地目录时传入 `--output-root /absolute/path`。
+
+## 每日终审汇总与飞书通知
+
+每天 14:00 汇总 Asia/Shanghai 的昨天结果。脚本同时读取：
+
+- `runs/*/candidates.pending-review.json` 中的自动发现结果；
+- `manual-runs/*/meme-cards.pending-review.json` 中的人工梗名结果。
+
+只有已经完成语义提炼、分类为 `meme_candidate` 且至少有一条使用路线的候选会生成终审卡；普通表达、证据不足和模型失败项会计入汇总中的跳过原因，不会伪造成可入库卡片。
+
+手动验证某一天：
+
+```bash
+export FEISHU_MEME_REVIEW_WEBHOOK='从本地任务配置注入，不写入仓库'
+python3 scripts/build_daily_meme_review.py \
+  --date 2026-09-07 \
+  --output-root /absolute/path/to/out/p0-meme-discovery \
+  --require-notify
+```
+
+定时任务不传 `--date`，脚本会自动选择昨天。默认输出为：
+
+```text
+out/p0-meme-discovery/
+  latest-daily-review.json
+  daily-reviews/<YYYYMMDD>/
+    daily-review-summary.json
+    daily-review.html
+```
+
+飞书自定义机器人只发送日期、候选数和本地归档路径，不会把 webhook 写入结果文件，也不会上传本地 HTML。审核页是单文件离线页面，候选数据已内嵌，复制到其他机器后仍可打开；页面支持：
+
+- 选择“通过·可使用”“通过·仅理解”或“淘汰”；
+- 展开并直接编辑每张卡的存储 JSON；
+- 导入、导出审核记录 JSON；
+- 导出审核后梗库和仅理解配置。
+
+### 从审核 JSON 构建插件 Release
+
+审核完成后下载“审核记录 JSON”，然后在插件仓库执行：
+
+```bash
+python3 scripts/build_reviewed_decision_release.py \
+  --base-release-id reviewed-semantic-meme-library-20260904-v1 \
+  --review-decisions /path/to/meme-semantic-card-review-decisions.json \
+  --target-release-id reviewed-semantic-meme-library-YYYYMMDD-v1
+```
+
+脚本会读取审核页中编辑后的卡片 JSON，只合并 `approve_use` 和 `approve_understand`，为新库生成多语义原型向量，并写入 `resources/releases/<target-release-id>/`。目标目录必须不存在，避免覆盖已有 Release。生成新 Release 不等于已经切换运行时；还需要更新插件使用的 release ID、复核仅理解列表、完成回放和发布。
+
+如果当前机器不能调用向量模型，可先校验并只生成合并后的 `library.json`：
+
+```bash
+python3 scripts/build_reviewed_decision_release.py \
+  --base-release-id reviewed-semantic-meme-library-20260904-v1 \
+  --review-decisions /path/to/meme-semantic-card-review-decisions.json \
+  --target-release-id reviewed-semantic-meme-library-YYYYMMDD-v1 \
+  --prepare-only /tmp/reviewed-meme-library.json
+```
 
 ## 从视频和直播弹幕发现候选
 
