@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.chiba.meme-live-sampling</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/ABSOLUTE/PATH/python3</string>
+    <string>/ABSOLUTE/PATH/chiba-meme-semantic-plugin/scripts/sample_live_rooms.py</string>
+    <string>--config</string>
+    <string>/ABSOLUTE/PATH/chiba-meme-semantic-plugin/ops/live_sampling.example.json</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/ABSOLUTE/PATH/chiba-meme-semantic-plugin</string>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>6</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>18</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Hour</key><integer>22</integer><key>Minute</key><integer>7</integer></dict>
+  </array>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>1800</integer>
+</dict>
+</plist>

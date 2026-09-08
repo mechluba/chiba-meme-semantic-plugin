@@ -17,14 +17,14 @@
 ## 当前梗包
 
 ```text
-resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1/
+resources/releases/reviewed-semantic-meme-library-20260904-v1/
 ```
 
-- 27 张人工审核卡
-- 31 条使用路线
-- 155 个语义原型向量
+- 156 张人工审核卡
+- 356 条使用路线
+- 1780 个语义原型向量
 - 每条路线由使用场景、交流意图、正例和反例共同校准
-- 4 张高风险卡固定为 `UNDERSTAND_ONLY`
+- 59 张高风险卡固定为 `UNDERSTAND_ONLY`
 
 `release.json` 固定记录库、索引和向量文件的 SHA256。插件启动时逐项校验，不接受绝对路径、目录越界、未审核卡、错位索引或错误向量维度。
 
@@ -86,3 +86,7 @@ resources/releases/reviewed-semantic-meme-library-20260729-multiprototype-v1/
 服务器的 `/opt/.../current` 不是 Git checkout；指纹工具会自动读取同级 `shared/deployed-revision`。也可以用 `--chiba-revision <完整 commit>` 显式指定，但不能省略 revision。
 
 长期找新梗、更新梗和让老梗退环境的流程见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
+
+## P0 离线候选发现
+
+命令、模型配置、人工输入梗名和输出文件说明见 [docs/MEME_DISCOVERY_USAGE.md](docs/MEME_DISCOVERY_USAGE.md)。公开社区语料的低频采集、授权直播导入、14 天滚动证据仓和来源边界见 [docs/P0_DISCOVERY.md](docs/P0_DISCOVERY.md)。候选发现与运行时 Release 完全分离；脚本不会自动发布任何梗卡。

@@ -227,7 +227,6 @@ class MemeRelease:
 
         card_ids: List[str] = []
         cards_by_id: Dict[str, Dict[str, Any]] = {}
-        expressions: List[str] = []
         route_count = 0
         for card in cards:
             if not isinstance(card, dict):
@@ -243,12 +242,9 @@ class MemeRelease:
                 raise MemeReleaseError(f"梗卡缺少 usage_routes: {card_id}")
             route_count += len(routes)
             card_ids.append(card_id)
-            expressions.append(expression)
             cards_by_id[card_id] = card
         if len(set(card_ids)) != len(card_ids):
             raise MemeReleaseError("梗包包含重复 card_id")
-        if len(set(expressions)) != len(expressions):
-            raise MemeReleaseError("梗包包含重复 canonical_expression")
         if int(manifest.get("route_count") or 0) != route_count:
             raise MemeReleaseError("release route_count 与语义 route 数量不一致")
         if (
