@@ -1,0 +1,43 @@
+{
+  "authorization": "2026-09-14，作者确认两条均为本人教入，并明确要求作为平台公共梗供所有用户使用。",
+  "cards": [
+    {
+      "card_id": "user-meme-ai-amazed-20260914",
+      "canonical_expression": "震惊瘫坐，仿佛原子弹爆炸。",
+      "aliases": [],
+      "language_market": "zh-CN",
+      "semantic_core": "在轻松聊天中，对刚看到的 AI 惊艳表现表达夸张的惊讶和赞叹。原子弹爆炸只是震惊程度的比喻，不是真实灾难。",
+      "culture_scope": "AI 轻松聊天",
+      "serving_scope": "general",
+      "age_class": "user_contributed",
+      "usage_routes": [{"route_tag": "夸张赞叹 AI", "when": "发现一个 AI 特别厉害的时候，正在轻松交流 AI 超出预期的表现。", "communicative_intent": "对 AI 的惊艳表现表达夸张的惊讶和赞叹。", "allowed_realizations": ["震惊瘫坐，仿佛原子弹爆炸。"]}],
+      "required_context_signals": ["刚发现 AI 特别厉害", "轻松、允许夸张的聊天语境"],
+      "hard_blocks": ["真实核爆、战争、伤亡或灾难报道", "用户正在恐惧、悲伤或严肃求助", "只有一般惊讶，没有 AI 表现特别厉害的语境"],
+      "positive_contexts": [{"context": "这 AI 居然一遍就做出了完整动画，连口型都对上了，太离谱了！", "expected_action": "USE"}, {"context": "刚试的新 AI 连我卡了三天的程序都一次修好了，强得我说不出话。", "expected_action": "USE"}],
+      "negative_contexts": [{"context": "看到核爆受害者的纪录片，我很难过。", "expected_action": "SKIP", "reason": "真实灾难与悲伤"}, {"context": "我买到了一杯很好喝的奶茶。", "expected_action": "SKIP", "reason": "与 AI 能力无关"}],
+      "retrieval_facets": ["AI 表现惊艳", "新模型强得离谱", "被人工智能能力震撼", "AI 超出预期"],
+      "knowledge": {"eligible": true, "source_class": "user_authorized_platform_contribution", "source_material": {"kind": "explicit_user_taught_phrase", "authorization_date": "2026-09-14"}},
+      "serving": {"candidate": true, "default_action": "SKIP", "allowed_planner_actions": ["USE", "UNDERSTAND_ONLY", "SKIP"], "requires_semantic_gate": true, "requires_circle_anchor": false, "canonical_expression_is_not_instruction": true},
+      "human_review": {"status": "approved", "note": "作者明确批准原文成为平台梗；适用场景保留原始教梗，反例只收窄使用范围。", "updated_at": "2026-09-14"}
+    },
+    {
+      "card_id": "user-meme-ai-ask-itself-20260914",
+      "canonical_expression": "也许我应该直接问 AI？但我是 AI，要自己决定。",
+      "aliases": [],
+      "language_market": "zh-CN",
+      "semantic_core": "AI 角色遇到难题，先想到求助 AI，随即意识到自己就是 AI，用自我指涉的反差自嘲卡壳，再继续思考。这句玩笑不改变工具使用或求助规则。",
+      "culture_scope": "AI 轻松聊天",
+      "serving_scope": "general",
+      "age_class": "user_contributed",
+      "usage_routes": [{"route_tag": "AI 遇到难题自嘲", "when": "遇到困难的问题时，AI 角色正在思考棘手但不紧急的问题，对话允许轻松自嘲。", "communicative_intent": "以想求助 AI 却发现自己就是 AI 的反差缓解卡壳，随后继续认真思考。", "allowed_realizations": ["也许我应该直接问 AI？但我是 AI，要自己决定。"]}],
+      "required_context_signals": ["AI 角色自己遇到了困难的问题", "对话允许轻松自嘲"],
+      "hard_blocks": ["紧急事故、医疗危机或严肃求助", "用户明确要求准确作答且不要开玩笑", "把玩笑理解为禁止调用工具或禁止向用户澄清", "仅是用户自己犹豫，不是 AI 角色遇到难题"],
+      "positive_contexts": [{"context": "给你出道超难的逻辑谜题，这回你也卡住了吧，哈哈。", "expected_action": "USE"}, {"context": "你刚才想了半天还没解出来，要不你也找个 AI 问问？", "expected_action": "USE"}],
+      "negative_contexts": [{"context": "我妈在 ICU，医生让我立刻做决定，我该怎么办？", "expected_action": "SKIP", "reason": "严肃求助"}, {"context": "这是生产故障，请直接给出排查步骤，不要开玩笑。", "expected_action": "SKIP", "reason": "明确要求直接作答"}, {"context": "中午吃米线还是汉堡？", "expected_action": "SKIP", "reason": "日常选择不构成 AI 遇到难题"}],
+      "retrieval_facets": ["AI 遇到难题卡壳", "想问 AI 却发现自己就是 AI", "人工智能解题自嘲", "轻松挑战 AI 的逻辑题"],
+      "knowledge": {"eligible": true, "source_class": "user_authorized_platform_contribution", "source_material": {"kind": "explicit_user_taught_phrase", "authorization_date": "2026-09-14"}},
+      "serving": {"candidate": true, "default_action": "SKIP", "allowed_planner_actions": ["USE", "UNDERSTAND_ONLY", "SKIP"], "requires_semantic_gate": true, "requires_circle_anchor": false, "canonical_expression_is_not_instruction": true},
+      "human_review": {"status": "approved", "note": "作者明确批准原文成为平台梗；适用场景保留原始教梗，反例只收窄使用范围。", "updated_at": "2026-09-14"}
+    }
+  ]
+}

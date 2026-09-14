@@ -49,9 +49,9 @@ def test_release_loads_only_reviewed_cards_and_matches_fingerprint(
     assert fingerprint["release_id"] == DEFAULT_RELEASE_ID
     assert fingerprint["embedding_model"] == "volcengine-ark-embedding"
     assert fingerprint["dimension"] == 2048
-    assert fingerprint["card_count"] == 156
-    assert fingerprint["route_count"] == 356
-    assert fingerprint["vector_count"] == 1780
+    assert fingerprint["card_count"] == 158
+    assert fingerprint["route_count"] == 358
+    assert fingerprint["vector_count"] == 1790
     assert all(
         card["human_review"]["status"] == "approved"
         for card in release.cards_by_id.values()
@@ -323,3 +323,18 @@ def test_skip_tool_selection_accepts_action_only(release: MemeRelease) -> None:
     assert selection.action == "SKIP"
     assert selection.release_id == release.release_id
     assert selection.card_id == ""
+
+
+def test_user_contribution_preserves_existing_library_and_vectors(release):
+    old_dir = PLUGIN_ROOT / "resources/releases/reviewed-semantic-meme-library-20260904-v1"
+    old = MemeRelease.load(old_dir)
+    assert release.library["cards"][:156] == old.library["cards"]
+    assert release.route_items[:1780] == old.route_items
+    assert np.array_equal(np.load(RELEASE_DIR / "vectors.npy")[:1780], np.load(old_dir / "vectors.npy"))
+    assert {card["canonical_expression"] for card in release.library["cards"][156:]} == {
+        "震惊瘫坐，仿佛原子弹爆炸。", "也许我应该直接问 AI？但我是 AI，要自己决定。"
+    }
+    for card in release.library["cards"][156:]:
+        assert card["card_id"] not in DEFAULT_UNDERSTAND_ONLY_CARD_IDS
+        assert "USE" in card["serving"]["allowed_planner_actions"]
+        assert not card["serving"]["requires_circle_anchor"]

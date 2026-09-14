@@ -32,7 +32,7 @@ from .meme_runtime import (
 
 PLUGIN_VERSION = "1.0.3"
 DEFAULT_RELEASE_ID = (
-    "reviewed-semantic-meme-library-20260904-v1"
+    "reviewed-semantic-meme-library-20260914-user-ai-v1"
 )
 DEFAULT_UNDERSTAND_ONLY_CARD_IDS = [
     "broad-meme-d1c18154ab138e16",

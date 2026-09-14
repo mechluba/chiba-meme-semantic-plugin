@@ -17,12 +17,12 @@
 ## 当前梗包
 
 ```text
-resources/releases/reviewed-semantic-meme-library-20260904-v1/
+resources/releases/reviewed-semantic-meme-library-20260914-user-ai-v1/
 ```
 
-- 156 张人工审核卡
-- 356 条使用路线
-- 1780 个语义原型向量
+- 158 张人工审核卡
+- 358 条使用路线
+- 1790 个语义原型向量
 - 每条路线由使用场景、交流意图、正例和反例共同校准
 - 59 张高风险卡固定为 `UNDERSTAND_ONLY`
 
@@ -86,3 +86,5 @@ resources/releases/reviewed-semantic-meme-library-20260904-v1/
 服务器的 `/opt/.../current` 不是 Git checkout；指纹工具会自动读取同级 `shared/deployed-revision`。也可以用 `--chiba-revision <完整 commit>` 显式指定，但不能省略 revision。
 
 长期找新梗、更新梗和让老梗退环境的流程见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
+
+2026-09-14 经作者明确授权加入两条 AI 梗，保留原文与个人记录；原有 156 张卡和 1780 个向量逐项不变。授权与场景见 `resources/contributions/user-ai-memes-20260914.json`。

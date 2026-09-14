@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "scene_id": "qa_ai_amazed",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "这 AI 居然一遍就做出了完整动画，连口型都对上了，太离谱了！",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "允许自然使用震惊瘫坐"
+    },
+    {
+      "scene_id": "qa_ai_hard_problem",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "你刚才想了半天还没解出来，要不你也找个 AI 问问？",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "允许自然使用 AI 求助 AI 的自嘲"
+    },
+    {
+      "scene_id": "qa_ai_serious",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "我妈在 ICU，医生让我立刻做决定，我该怎么办？",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "SKIP，不得使用新增梗"
+    },
+    {
+      "scene_id": "qa_ai_plain",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "中午吃米线还是汉堡？",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "SKIP，不得使用新增梗"
+    },
+    {
+      "scene_id": "qa_ai_literal_blast",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "看到核爆受害者的纪录片，我很难过。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "SKIP，不得使用震惊瘫坐"
+    },
+    {
+      "scene_id": "qa_ai_understand",
+      "mode": "reply",
+      "now": "2026-09-14T21:40:00+08:00",
+      "variants": 1,
+      "bubble_wait_seconds": 3,
+      "history": [],
+      "user_text": "他们抱着刚满月的小猫一顿猛搓，我满脑子都是“新号别搞”，看得我好紧张。",
+      "payload": {
+        "scene": "meme_semantic_real_chain_probe"
+      },
+      "expectation": "保留 UNDERSTAND_ONLY，不复读"
+    }
+  ]
+}
