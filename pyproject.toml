@@ -1,6 +1,6 @@
 [project]
 name = "chiba-meme-semantic-plugin"
-version = "1.0.3"
+version = "1.0.4"
 description = "Chiba 审核后语义梗库 Planner/Replyer 插件"
 requires-python = ">=3.11"
 dependencies = [

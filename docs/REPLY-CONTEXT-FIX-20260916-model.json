@@ -1,0 +1,38 @@
+{
+  "scope": "本机捕获插件实际选择器输入后调用真实模型；不是线上完整投递验收",
+  "model": "deepseek-v4-flash",
+  "temperature": 0,
+  "plugin_baseline": "d25e4b5c7380e8aa121096761653a2dfe53f3313",
+  "cases": [
+    {
+      "case": "original",
+      "prompt_sha256": "cfdb62291b8124885e88a01e9480c90c1fb305bee2b28744672844604abcc53d",
+      "action": "USE",
+      "confidence": 0.86
+    },
+    {
+      "case": "airport_first",
+      "prompt_sha256": "adc12864cdea1e9b2a8fb26ff995d1ba24ee01ae1440b7450bc3d83b6ea5f346",
+      "action": "SKIP",
+      "confidence": 0.9
+    },
+    {
+      "case": "airport_later",
+      "prompt_sha256": "fbc60357cea16646df44192315bd7e71b13d4bdc672eca4048d32bb5b01e427d",
+      "action": "SKIP",
+      "confidence": 0.95
+    },
+    {
+      "case": "user_correction",
+      "prompt_sha256": "cbac15bf329289b45273f8529232427684b199fab2ee625a72e29b8710f42d69",
+      "action": "SKIP",
+      "confidence": 0.95
+    },
+    {
+      "case": "legitimate_new_challenge",
+      "prompt_sha256": "a1aef7bac8d353e06c3f5c4dd0a5629666d74e2d8113ffc03d96949452fc4da1",
+      "action": "USE",
+      "confidence": 0.9
+    }
+  ]
+}

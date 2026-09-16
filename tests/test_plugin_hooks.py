@@ -7,6 +7,7 @@ from typing import Any
 
 import json
 import logging
+import asyncio
 
 import pytest
 
@@ -20,6 +21,13 @@ from chiba_meme_semantic_plugin.plugin import PLUGIN_VERSION, MemeSemanticPlugin
 
 
 TARGET_SESSION = "galpet-session-1"
+
+
+def _latest_message(text: str, *, bot: bool = False) -> dict[str, Any]:
+    return {
+        "message_id": "latest-2", "timestamp": "2", "processed_plain_text": text,
+        "message_info": {"user_info": {"user_id": "galpet" if bot else "user-1"}},
+    }
 
 
 @dataclass
@@ -341,7 +349,7 @@ async def test_semantic_selector_promotes_planner_skip_to_one_resource() -> None
     assert "不得使用关键词、正则或字面命中" in selector_call["prompt"]
     assert "reviewed_positive_contexts" in selector_call["prompt"]
     assert (
-        plugin._replyer_decision_states[TARGET_SESSION].source
+        plugin._replyer_decision_states[(TARGET_SESSION, "")].source
         == "semantic_selector"
     )
     assert result["modified_kwargs"]["reply_tool_args"][
@@ -371,7 +379,7 @@ async def test_semantic_selector_low_confidence_use_fails_closed() -> None:
         reply_tool_args={MEME_ACTION_ARG: "SKIP"},
     )
     assert result == {"action": "continue"}
-    assert TARGET_SESSION not in plugin._replyer_decision_states
+    assert (TARGET_SESSION, "") not in plugin._replyer_decision_states
 
 
 @pytest.mark.asyncio
@@ -396,7 +404,7 @@ async def test_semantic_selector_hard_block_overrides_use() -> None:
         reply_tool_args={MEME_ACTION_ARG: "SKIP"},
     )
     assert result == {"action": "continue"}
-    assert TARGET_SESSION not in plugin._replyer_decision_states
+    assert (TARGET_SESSION, "") not in plugin._replyer_decision_states
 
 
 @pytest.mark.asyncio
@@ -546,6 +554,9 @@ async def test_after_response_observer_semantically_scores_visible_reply(
     plugin, context = _make_plugin()
     await _run_planner(plugin)
     args = _selected_args(plugin, action="USE")
+    await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="reply-1", reply_tool_args=args,
+    )
     with caplog.at_level(logging.INFO):
         result = await plugin.observe_replyer_after_response(
             session_id=TARGET_SESSION,
@@ -589,6 +600,7 @@ async def test_observer_scores_selector_promoted_reply(
     )
     await plugin.handle_replyer_before_request(
         session_id=TARGET_SESSION,
+        reply_message_id="reply-selector-1",
         extra_prompt="",
         reply_tool_args={MEME_ACTION_ARG: "SKIP"},
     )
@@ -608,3 +620,140 @@ async def test_observer_scores_selector_promoted_reply(
     )
     event = json.loads(structured.removeprefix("meme_semantic_effect "))
     assert event["decision_source"] == "semantic_selector"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("scene_key", [
+    "galpet_task_reply_extra_prompt", "galpet_media_reply_context", "galpet_evidence_reply_extra_prompt",
+])
+async def test_selector_reads_current_video_and_latest_visible_reply(scene_key: str) -> None:
+    plugin, context = _make_plugin(semantic_selector_enabled=True)
+    await _run_planner(plugin)
+    old_snapshot = plugin._candidate_states[TARGET_SESSION].semantic_query_text
+    context.message.messages.append(_latest_message("已经评论过这个梗了。", bot=True))
+    await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="airport-reply",
+        reply_tool_args={scene_key: "当前视频是机场旅行，播放轮次 2，正在介绍当地人口。"},
+    )
+    prompt = context.llm.generate_calls[-1]["prompt"]
+    assert "已经评论过这个梗了" in prompt
+    assert "当前视频是机场旅行" in prompt
+    assert plugin._candidate_states[TARGET_SESSION].semantic_query_text == old_snapshot
+    assert len(context.llm.embed_calls) == 1  # 复用检索素材，不复用旧的使用许可。
+
+
+@pytest.mark.asyncio
+async def test_selector_sees_user_correction_without_waiting_for_planner() -> None:
+    plugin, context = _make_plugin(semantic_selector_enabled=True)
+    await _run_planner(plugin)
+    context.message.messages = [_latest_message("请停止重复刚才的说法。")]
+    result = await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="correction", reply_tool_args={},
+    )
+    assert result == {"action": "continue"}
+    prompt = context.llm.generate_calls[-1]["prompt"]
+    assert "请停止重复刚才的说法" in prompt
+    assert "这波配合太漂亮" not in prompt.split("真实可见对话：")[-1]
+
+
+@pytest.mark.asyncio
+async def test_reply_context_read_failure_does_not_reuse_old_snapshot() -> None:
+    plugin, context = _make_plugin(semantic_selector_enabled=True)
+    await _run_planner(plugin)
+
+    async def fail(**kwargs):
+        raise RuntimeError("当前消息读取失败")
+
+    context.message.get_recent = fail
+    with pytest.raises(RuntimeError, match="当前消息读取失败"):
+        await plugin.handle_replyer_before_request(
+            session_id=TARGET_SESSION, reply_message_id="failed-read", reply_tool_args={},
+        )
+    assert not context.llm.generate_calls
+
+
+@pytest.mark.asyncio
+async def test_empty_current_history_does_not_reuse_cached_context() -> None:
+    plugin, context = _make_plugin(semantic_selector_enabled=True)
+    await _run_planner(plugin)
+    context.message.messages = []
+    result = await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="empty-history", reply_tool_args={},
+    )
+    assert result == {"action": "continue"}
+    assert not context.llm.generate_calls
+
+
+@pytest.mark.asyncio
+async def test_unknown_reply_does_not_borrow_another_decision() -> None:
+    plugin, context = _make_plugin()
+    await _run_planner(plugin)
+    args = _selected_args(plugin, action="USE")
+    await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="known-reply", reply_tool_args=args,
+    )
+    await plugin.observe_replyer_after_response(
+        session_id=TARGET_SESSION, reply_message_id="unknown-reply", reply_tool_args=args, response="其他回复",
+    )
+    assert not context.llm.generate_calls
+    assert (TARGET_SESSION, "known-reply") in plugin._replyer_decision_states
+
+
+@pytest.mark.asyncio
+async def test_observer_uses_its_own_reply_context_after_another_turn() -> None:
+    plugin, context = _make_plugin()
+    await _run_planner(plugin)
+    args = _selected_args(plugin, action="USE")
+    for reply_id, text in [("reply-a", "甲回合的真实上下文"), ("reply-b", "乙回合的真实上下文")]:
+        context.message.messages = [_latest_message(text)]
+        await plugin.handle_replyer_before_request(
+            session_id=TARGET_SESSION, reply_message_id=reply_id, reply_tool_args=args,
+        )
+    # 后台 Planner 又产生新候选，也不能覆盖两条回复已绑定的快照。
+    await _run_planner(plugin)
+    for reply_id, expected, absent in [
+        ("reply-a", "甲回合的真实上下文", "乙回合的真实上下文"),
+        ("reply-b", "乙回合的真实上下文", "甲回合的真实上下文"),
+    ]:
+        await plugin.observe_replyer_after_response(
+            session_id=TARGET_SESSION, reply_message_id=reply_id, reply_tool_args=args, response="合成回复",
+        )
+        prompt = context.llm.generate_calls[-1]["prompt"]
+        assert expected in prompt and absent not in prompt
+
+
+@pytest.mark.asyncio
+async def test_concurrent_selectors_keep_reply_contexts_separate() -> None:
+    plugin, context = _make_plugin(semantic_selector_enabled=True)
+    await _run_planner(plugin)
+    args = _selected_args(plugin, action="USE")
+    context.llm.selector_json = json.dumps({
+        "action": "USE", "card_id": args[MEME_CARD_ID_ARG], "route_index": args[MEME_ROUTE_INDEX_ARG],
+        "confidence": 0.9, "matched_hard_blocks": [], "reason": "合成测试",
+    })
+    first_started, resume_first = asyncio.Event(), asyncio.Event()
+    generate = context.llm.generate
+
+    async def interleave(prompt, **kwargs):
+        if "梗语义机会裁判" in prompt and "第一条现场" in prompt:
+            first_started.set()
+            await resume_first.wait()
+        return await generate(prompt, **kwargs)
+
+    context.llm.generate = interleave
+    context.message.messages = [_latest_message("第一条现场")]
+    first = asyncio.create_task(plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="first", reply_tool_args={},
+    ))
+    await asyncio.wait_for(first_started.wait(), timeout=2)
+    context.message.messages = [_latest_message("第二条现场")]
+    await plugin.handle_replyer_before_request(
+        session_id=TARGET_SESSION, reply_message_id="second", reply_tool_args={},
+    )
+    resume_first.set()
+    await first
+    for reply_id, expected in [("first", "第一条现场"), ("second", "第二条现场")]:
+        await plugin.observe_replyer_after_response(
+            session_id=TARGET_SESSION, reply_message_id=reply_id, response="合成回复",
+        )
+        assert expected in context.llm.generate_calls[-1]["prompt"]
